@@ -6,7 +6,6 @@ import org.jlab.jnp.pdg.PhysicsConstants;
 import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
-
 import org.jlab.groot.tree.*; // new import for ntuples
 
 double LIGHTSPEED = 30.0; // speed of light in cm/ns
@@ -190,6 +189,7 @@ def cli = new CliBuilder(usage:'eg2ProtonTree.groovy [options] infile1 infile2 .
 cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
+cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -200,6 +200,9 @@ if(options.c) printCounter = options.c;
 
 def maxEvents = 0;
 if(options.M) maxEvents = options.M;
+
+def outFile = "eg2ProtonNtuple.hipo";
+if(options.o) outFile = options.o;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -223,7 +226,7 @@ Bank       ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb
 Bank       scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
 // Define a ntuple tree with 5 variables
-TreeFile tree = new TreeFile("ntuple.hipo","protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:pNum:pIndex:pPx:pPy:pPz:q2:nu:W:zh:pT2:xb:yb");
+TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:pNum:pIndex:pPx:pPy:pPz:q2:nu:W:zh:pT2:xb:yb");
 float[]  treeItem = new float[20];
 
 // Loop over all events
@@ -298,9 +301,7 @@ while(reader.hasNext()){
       if(cutCCstat && cutECstat && cutSCstat){
         if(electron.p()>=ELECTRON_MOM) cutElectronMom = true;
         LorentzVector vecQ2 = LorentzVector.from(beam);
-        // creates a copy of lorentz vector from electron
-        LorentzVector  vecE = LorentzVector.from(electron);
-        vecQ2.sub(vecE);
+        vecQ2.sub(electron);
         posQ2 = -vecQ2.mass2();
 
         if(posQ2>=Q2_DIS) cutQ2 = true;

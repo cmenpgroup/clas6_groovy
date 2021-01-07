@@ -184,7 +184,7 @@ LorentzVector photon = new LorentzVector(0,0,0,0);
 LorentzVector piplus = new LorentzVector(0,0,0,0);
 LorentzVector piminus = new LorentzVector(0,0,0,0);
 
-double beamEnergy = 5.1;
+double beamEnergy = 5.015;
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 
