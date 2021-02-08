@@ -9,14 +9,9 @@ import org.jlab.groot.ui.*;
 import org.jlab.groot.math.*;
 import org.jlab.groot.fitter.DataFitter;
 
-def Get_BetaFromMass = {
-  mom, mass->
-  double ret = -99.0;
-  double momSq = mom*mom;
+import eg2Cuts.clas6beta
 
-  if(momSq>0.0) ret = 1.0/Math.sqrt((mass*mass)/momSq + 1.0);
-  return ret;
-}
+myBeta = new clas6beta();  // create the beta object
 
 GStyle.getAxisAttributesX().setTitleFontSize(32);
 GStyle.getAxisAttributesY().setTitleFontSize(32);
@@ -112,19 +107,19 @@ while(reader.hasNext()){   // Loop over all events
     int pid = bank.getInt("pid",i);
     switch(pid){
       case 11:
-        betaFromMass = Get_BetaFromMass(p,PhyConsts.massElectron());
+        betaFromMass = myBeta.Get_BetaFromMass(p,PhyConsts.massElectron());
         if(betaFromMass>-99.0) h2_dBetaVsP_em.fill(p,beta-betaFromMass);
         break;
       case 211:
-        betaFromMass = Get_BetaFromMass(p,PhyConsts.massPionCharged());
+        betaFromMass = myBeta.Get_BetaFromMass(p,PhyConsts.massPionCharged());
         if(betaFromMass>-99.0) h2_dBetaVsP_pip.fill(p,beta-betaFromMass);
         break;
       case -211:
-        betaFromMass = Get_BetaFromMass(p,PhyConsts.massPionCharged());
+        betaFromMass = myBeta.Get_BetaFromMass(p,PhyConsts.massPionCharged());
         if(betaFromMass>-99.0) h2_dBetaVsP_pim.fill(p,beta-betaFromMass);
         break;
       case 2212:
-        betaFromMass = Get_BetaFromMass(p,PhyConsts.massProton());
+        betaFromMass = myBeta.Get_BetaFromMass(p,PhyConsts.massProton());
         if(betaFromMass>-99.0){
           h1_dBeta_proton.fill(beta-betaFromMass);
           h2_dBetaVsP_proton.fill(p,beta-betaFromMass);

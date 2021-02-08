@@ -6,6 +6,17 @@ import org.jlab.jnp.pdg.PhysicsConstants;
 import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
+import org.jlab.groot.math.*;
+
+import eg2Cuts.clas6beta
+import eg2Cuts.clas6EC
+import eg2Cuts.eg2Target
+import eg2Cuts.clas6Proton
+
+clas6beta myBeta = new clas6beta();  // create the beta object
+clas6EC myEC = new clas6EC();  // create the EC object
+eg2Target myTarget = new eg2Target();  // create the eg2 target object
+clas6Proton myProton = new clas6Proton(); // create the proton object
 
 GStyle.getAxisAttributesX().setTitleFontSize(18);
 GStyle.getAxisAttributesY().setTitleFontSize(18);
@@ -25,166 +36,11 @@ double ECIN_MIN = 0.06;
 int NUM_ELECTRONS = 1;
 int NUM_PROTONS = 1;
 
-def Get_TargetIndex = {
-  Vec3->
-    int ret = 0; // init the return variable
-
-    if (Vec3.z() >= -32.0 &&  Vec3.z() < -28.0) {
-        ret = 1; // deuterium target
-    } else if (Vec3.z() >= -26.0 && Vec3.z() < -23.0) {
-        ret = 2; // nuclear target
-    } else {
-        ret = 0; // no target
-    }
-    return ret;
-}
-
-def Get_EC_SamplingFraction = {
-    coeff,sector,targMass->
-    double ret = 0.0;
-
-    def EC_SamplingFrac_C = new Float[6][5];
-    def EC_SamplingFrac_Fe = new Float[6][5];
-    def EC_SamplingFrac_Pb = new Float[6][5];
-
-    EC_SamplingFrac_C[0][0] = 0.226726; EC_SamplingFrac_C[0][1] = 0.0379557; EC_SamplingFrac_C[0][2] = -0.00855326; EC_SamplingFrac_C[0][3] = 7.27022e-09; EC_SamplingFrac_C[0][4] = 0.0370079;
-    EC_SamplingFrac_C[1][0] = 0.222333; EC_SamplingFrac_C[1][1] = 0.0581705; EC_SamplingFrac_C[1][2] = -0.0131283; EC_SamplingFrac_C[1][3] = 3.12094e-12; EC_SamplingFrac_C[1][4] = 0.0413565;
-    EC_SamplingFrac_C[2][0] = 0.245212; EC_SamplingFrac_C[2][1] = 0.0213835; EC_SamplingFrac_C[2][2] = -0.00277372; EC_SamplingFrac_C[2][3] = 8.27916e-08; EC_SamplingFrac_C[2][4] = 0.0426498;
-    EC_SamplingFrac_C[3][0] = 0.238399; EC_SamplingFrac_C[3][1] = 0.0301926; EC_SamplingFrac_C[3][2] = -0.00720393; EC_SamplingFrac_C[3][3] = -3.81029e-09; EC_SamplingFrac_C[3][4] = 0.0309331;
-    EC_SamplingFrac_C[4][0] = 0.241834; EC_SamplingFrac_C[4][1] = 0.0442975; EC_SamplingFrac_C[4][2] = -0.0105584; EC_SamplingFrac_C[4][3] = 9.74651e-09; EC_SamplingFrac_C[4][4] = 0.0303602;
-    EC_SamplingFrac_C[5][0] = 0.245868; EC_SamplingFrac_C[5][1] = 0.0545128; EC_SamplingFrac_C[5][2] = -0.0149168; EC_SamplingFrac_C[5][3] = 1.43097e-08; EC_SamplingFrac_C[5][4] = 0.0483305;
-
-    EC_SamplingFrac_Fe[0][0] = 2.22E-1; EC_SamplingFrac_Fe[0][1] = 2.23E-2; EC_SamplingFrac_Fe[0][2] = -2.41E-3; EC_SamplingFrac_Fe[0][3] = 9.23E-3; EC_SamplingFrac_Fe[0][4] = 2.98E-2;
-    EC_SamplingFrac_Fe[1][0] = 2.34E-1; EC_SamplingFrac_Fe[1][1] = 1.95E-2; EC_SamplingFrac_Fe[1][2] = -2.08E-3; EC_SamplingFrac_Fe[1][3] = 8.66E-3; EC_SamplingFrac_Fe[1][4] = 3.09E-2;
-    EC_SamplingFrac_Fe[2][0] = 2.52E-1; EC_SamplingFrac_Fe[2][1] = 2.42E-2; EC_SamplingFrac_Fe[2][2] = -3.39E-3; EC_SamplingFrac_Fe[2][3] = 1.08E-2; EC_SamplingFrac_Fe[2][4] = 2.64E-2;
-    EC_SamplingFrac_Fe[3][0] = 2.51E-1; EC_SamplingFrac_Fe[3][1] = 2.08E-2; EC_SamplingFrac_Fe[3][2] = -3.27E-3; EC_SamplingFrac_Fe[3][3] = 7.22E-3; EC_SamplingFrac_Fe[3][4] = 2.98E-2;
-    EC_SamplingFrac_Fe[4][0] = 2.72E-1; EC_SamplingFrac_Fe[4][1] = 1.18E-2; EC_SamplingFrac_Fe[4][2] = -1.87E-3; EC_SamplingFrac_Fe[4][3] = 1.84E-2; EC_SamplingFrac_Fe[4][4] = 3.48E-2;
-    EC_SamplingFrac_Fe[5][0] = 2.52E-1; EC_SamplingFrac_Fe[5][1] = 2.28E-2; EC_SamplingFrac_Fe[5][2] = -3.11E-3; EC_SamplingFrac_Fe[5][3] = 4.11E-3; EC_SamplingFrac_Fe[5][4] = 3.55E-2;
-
-    EC_SamplingFrac_Pb[0][0] = 2.53E-1; EC_SamplingFrac_Pb[0][1] = 1.38E-2; EC_SamplingFrac_Pb[0][2] = -1.40E-3; EC_SamplingFrac_Pb[0][3] = 7.67E-3; EC_SamplingFrac_Pb[0][4] = 3.54E-2;
-    EC_SamplingFrac_Pb[0][0] = 2.53E-1; EC_SamplingFrac_Pb[0][1] = 1.38E-2; EC_SamplingFrac_Pb[0][2] = -1.40E-3; EC_SamplingFrac_Pb[0][3] = 7.67E-3; EC_SamplingFrac_Pb[0][4] = 3.54E-2;
-    EC_SamplingFrac_Pb[1][0] = 2.49E-1; EC_SamplingFrac_Pb[1][1] = 1.47E-2; EC_SamplingFrac_Pb[1][2] = -1.49E-3; EC_SamplingFrac_Pb[1][3] = 7.53E-3; EC_SamplingFrac_Pb[1][4] = 3.38E-2;
-    EC_SamplingFrac_Pb[2][0] = 2.54E-1; EC_SamplingFrac_Pb[2][1] = 2.26E-2; EC_SamplingFrac_Pb[2][2] = -3.05E-3; EC_SamplingFrac_Pb[2][3] = 8.13E-3; EC_SamplingFrac_Pb[2][4] = 2.77E-2;
-    EC_SamplingFrac_Pb[3][0] = 2.55E-1; EC_SamplingFrac_Pb[3][1] = 1.90E-2; EC_SamplingFrac_Pb[3][2] = -3.05E-3; EC_SamplingFrac_Pb[3][3] = 7.20E-3; EC_SamplingFrac_Pb[3][4] = 3.04E-2;
-    EC_SamplingFrac_Pb[4][0] = 2.76E-1; EC_SamplingFrac_Pb[4][1] = 1.11E-2; EC_SamplingFrac_Pb[4][2] = -1.76E-3; EC_SamplingFrac_Pb[4][3] = 1.81E-2; EC_SamplingFrac_Pb[4][4] = 3.53E-2;
-    EC_SamplingFrac_Pb[5][0] = 2.62E-1; EC_SamplingFrac_Pb[5][1] = 1.92E-2; EC_SamplingFrac_Pb[5][2] = -2.62E-3; EC_SamplingFrac_Pb[5][3] = 1.99E-3; EC_SamplingFrac_Pb[5][4] = 3.76E-2;
-
-    if(sector>=1 && sector<=6){ //check that the sector is between 1 and 6
-        if(coeff>=0 && coeff<5){
-            switch (targMass){
-                case 12: ret = EC_SamplingFrac_C[sector-1][coeff]; break;
-                case 56: ret = EC_SamplingFrac_Fe[sector-1][coeff]; break;
-                case 208: ret = EC_SamplingFrac_Pb[sector-1][coeff]; break;
-                default:
-                    System.out.println("Get_EC_SamplingFraction: Target Mass " + targMass + " is unknown.");
-                    ret = 0.0;
-                    break;
-            }
-        }
-        else{
-            System.out.println("Get_EC_SamplingFraction: Coefficient " + coeff + " is out of range.");
-        }
-    }
-    else{
-        System.out.println("Get_EC_SamplingFraction: Sector " + sector + " is out of range.");
-    }
-    return ret;
-}
-
-def EC_SamplingFraction_Cut = {
-    mom, ECtotal, sector, targMass ->
-    boolean ret = false;
-
-    double a = Get_EC_SamplingFraction(0,sector,targMass);
-    double b = Get_EC_SamplingFraction(1,sector,targMass);
-    double c = Get_EC_SamplingFraction(2,sector,targMass);
-    double d = Get_EC_SamplingFraction(3,sector,targMass);
-    double f = Get_EC_SamplingFraction(4,sector,targMass);
-
-    double centroid = a + b*mom + c*mom*mom;
-    double sigma = Math.sqrt(d*d + f*f/Math.sqrt(mom));
-    double Nsigma = 2.5;
-
-    double diff = Math.abs(ECtotal/mom - centroid);
-
-    ret = (diff < Nsigma*sigma) ? true : false;
-
-    return ret;
-}
-
-def dt_ECSC = {
-  ECtime, SCtime->
-
-  double dt = ECtime - SCtime;
-  double dtCentroid = 0.6;
-  double dtWidth = 0.6;
-  double dtNsigmas = 3.0;
-  double dtLo = dtCentroid - dtNsigmas*dtWidth;
-  double dtHi = dtCentroid + dtNsigmas*dtWidth;
-
-  boolean ret = (dt >= dtLo && dt < dtHi) ? true : false;
-  return ret;
-}
-
-def ProtonDBeta_Cut = {
-  dbeta ->
-
-  double dBetaCentroid = -0.00218;
-  double dBetaWidth = 0.01002;
-  double dBetaNsigmas = 3.0;
-  double dBetaLo = dBetaCentroid - dBetaNsigmas*dBetaWidth;
-  double dBetaHi = dBetaCentroid + dBetaNsigmas*dBetaWidth;
-
-  boolean ret = (dbeta >= dBetaLo && dbeta < dBetaHi) ? true : false;
-  return ret;
-}
-
-def Get_Msq = {
-  mom, beta->
-  double Msq = -99.0;
-  double betaSq = beta*beta;
-  if(betaSq>0.0) Msq = mom*mom*(1.0-betaSq)/betaSq;
-  return Msq;
-}
-
-def Get_BetaFromMass = {
-  Vec4->
-  double ret = -99.0;
-  double Psq = Vec4.p()*Vec4.p();
-  double Msq = Vec4.mass()*Vec4.mass();
-  if(Psq>0.0) ret = 1.0/Math.sqrt(Msq/Psq + 1.0);
-  return ret;
-}
-
-def Get_CorrectedVertex = {
-  Vec3, Vec4->
-
-  double phi_deg = Math.toDegrees(Vec4.phi()); // convert to degrees
-  int phi_new = phi_deg+30.0; // shift by 30 deg
-  if(phi_new<0)phi_new+=360.0; // if negative, shift positive
-  int sect =  Math.floor(phi_new/60.0);
-
-  Vector3 RotatedVertPos = Vector3.from(Vec3);
-  Vector3 RotatedVertDir = Vector3.from(Vec4.vect());
-  Vector3 TargetPos = new Vector3(0.043,-0.33,0.0);
-
-  RotatedVertPos.rotateZ(-Math.toRadians(60.0*sect));
-  RotatedVertDir.rotateZ(-Math.toRadians(60.0*sect));
-  TargetPos.rotateZ(-Math.toRadians(60.0*sect));
-
-  double ShiftLength = (TargetPos.x() - RotatedVertPos.x())/RotatedVertDir.x();
-  RotatedVertDir.setXYZ(ShiftLength*RotatedVertDir.x(),ShiftLength*RotatedVertDir.y(),ShiftLength*RotatedVertDir.z());
-  RotatedVertPos.add(RotatedVertDir);
-
-  Vector3 ParticleVertCorr = Vector3.from(RotatedVertPos);
-  ParticleVertCorr.sub(TargetPos.x(),TargetPos.y(),0.0);
-  return ParticleVertCorr;
-}
-
 int counterFile = 0;
-float px, py, pz;
+double px, py, pz;
 def ElectronList =[];
 def ProtonList = [];
+def PosChargedList = [];
 def OtherList = [];
 def ElectronVecList = [];
 def ProtonVecList = [];
@@ -195,6 +51,7 @@ LorentzVector electron = new LorentzVector(0,0,0,0);
 Vector3 v3electron = new Vector3(0,0,0);
 LorentzVector proton = new LorentzVector(0,0,0,0);
 Vector3 v3proton = new Vector3(0,0,0);
+LorentzVector partLV = new LorentzVector(0,0,0,0);
 
 double beamEnergy = 5.1;
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
@@ -292,15 +149,15 @@ H1F h1_NumProtonPID = new H1F("h1_NumProtonPID","# of protons per event","Counts
 h1_NumProtonPID.setTitle("Experiment: eg2");
 h1_NumProtonPID.setFillColor(GREEN);
 
-H1F h1_ProtonP = new H1F("h1_ProtonP","Momentum(proton) (GeV)","Counts",100,0.0,5.0);
+H1F h1_ProtonP = new H1F("h1_ProtonP","Momentum(proton) (GeV)","Counts",100,0.0,3.5);
 h1_ProtonP.setTitle("Experiment: eg2");
 h1_ProtonP.setFillColor(GREEN);
 
-H2F h2_dBetaVsP_proton = new H2F("h2_dBetaVsP_proton","Experiment: eg2",100,0.0,5,200,-0.1,0.1);
+H2F h2_dBetaVsP_proton = new H2F("h2_dBetaVsP_proton","Experiment: eg2",100,0.0,3.5,200,-0.1,0.1);
 h2_dBetaVsP_proton.setTitleX("Momentum (GeV/c)");
 h2_dBetaVsP_proton.setTitleY("#Delta #beta (proton)");
 
-H2F h2_dBetaVsP_proton_cut = new H2F("h2_dBetaVsP_proton_cut","Experiment: eg2",100,0.0,5,200,-0.1,0.1);
+H2F h2_dBetaVsP_proton_cut = new H2F("h2_dBetaVsP_proton_cut","Experiment: eg2",100,0.0,3.5,200,-0.1,0.1);
 h2_dBetaVsP_proton_cut.setTitleX("Momentum (GeV/c)");
 h2_dBetaVsP_proton_cut.setTitleY("#Delta #beta (proton)");
 
@@ -319,6 +176,18 @@ h2_Vz_phi_prot.setTitleY("#phi (deg.)");
 H2F h2_Vz_phi_prot_corr = new H2F("h2_Vz_phi_prot_corr","Experiment: eg2 - Protons",100,-33,-20.0,360,-180.0,180.0);
 h2_Vz_phi_prot_corr.setTitleX("Vertex z (cm)");
 h2_Vz_phi_prot_corr.setTitleY("#phi (deg.)");
+
+double P_full_lo = 0.0;
+double P_full_hi = 3.0;
+double P_bin_width = 0.03;
+int P_full_bins = (P_full_hi - P_full_lo)/P_bin_width;
+H2F h2_dTOF_VS_P = new H2F("h2_dTOF_VS_P","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
+h2_dTOF_VS_P.setTitleX("Momentum (GeV/c)");
+h2_dTOF_VS_P.setTitleY("#DeltaTOF (ns)");
+
+H2F h2_dTOF_VS_P_cut = new H2F("h2_dTOF_VS_P_cut","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
+h2_dTOF_VS_P_cut.setTitleX("Momentum (GeV/c)");
+h2_dTOF_VS_P_cut.setTitleY("#DeltaTOF (ns)");
 
 String[] TgtLabel = ["D2","Nuc","Other"];
 String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","zh","pT^2 (GeV^2)","zLC"];
@@ -382,6 +251,7 @@ while(reader.hasNext()){
   OtherList.clear();
   ElectronVecList.clear();
   ProtonVecList.clear();
+  PosChargedList.clear();
 
   reader.nextEvent(event);
   event.read(bank);
@@ -391,16 +261,19 @@ while(reader.hasNext()){
 
   int rows = bank.getRows();
   for(int i = 0; i < rows; i++){
-    switch(bank.getInt("pid",i)){
-      case 11: ElectronList.add(i); break;
-      case 2212: ProtonList.add(i); break;
+    switch(i){
+      case {bank.getInt("pid",i)==11}: ElectronList.add(i); break;
+//      case {bank.getInt("pid",i)==2212}: ProtonList.add(i); break;
+      case {bank.getInt("charge",i)>0}: PosChargedList.add(i); break;
       default: OtherList.add(i); break;
     }
   }
 
+  // electron ID
   h1_NumElectronBank.fill(ElectronList.size());
-  if(ElectronList.size()>=NUM_ELECTRONS){
+  if(ElectronList.size()>=NUM_ELECTRONS){  // check that there are electrons in event
     ElectronList.each { val ->
+      // initialize electron cuts
       boolean cutElectronMom = false;
       boolean cutQ2 = false;
       boolean cutW = false;
@@ -412,22 +285,23 @@ while(reader.hasNext()){
       boolean cutECoverP = false;
       boolean cutdtECSC = false;
 
+      // read in the momentum components
       px = bank.getFloat("px",val);
       py = bank.getFloat("py",val);
       pz = bank.getFloat("pz",val);
-      electron.setPxPyPzM(px, py, pz, PhyConsts.massElectron());
+      electron.setPxPyPzM(px, py, pz, PhyConsts.massElectron()); // create electron 4-vector
       v3electron.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
 
       double phi_deg = Math.toDegrees(electron.phi()); // convert to degrees
       h2_Vz_phi.fill(v3electron.z(),phi_deg);
-      Vector3 v3electron_corr = Get_CorrectedVertex(v3electron,electron);
+      Vector3 v3electron_corr = myTarget.Get_CorrectedVertex(v3electron,electron); // corrected vertex
       h2_Vz_phi_corr.fill(v3electron_corr.z(),phi_deg);
 
-      if(bank.getInt("ccstat",val)>0 && ccpb.getRows()>0){
+      if(bank.getInt("ccstat",val)>0 && ccpb.getRows()>0){ // check CC
         cutCCstat = true;
         cc_nphe = ccpb.getFloat("nphe",bank.getInt("ccstat",val)-1);
       }
-      if(bank.getInt("ecstat",val)>0 && ecpb.getRows()>0){
+      if(bank.getInt("ecstat",val)>0 && ecpb.getRows()>0){ // check EC
         cutECstat = true;
         ECsector = ecpb.getInt("sector",bank.getInt("ecstat",val)-1);
         ecin = ecpb.getFloat("ein",bank.getInt("ecstat",val)-1);
@@ -435,33 +309,33 @@ while(reader.hasNext()){
         ectot = ecpb.getFloat("etot",bank.getInt("ecstat",val)-1);
         ecTime = ecpb.getFloat("time",bank.getInt("ecstat",val)-1);
       }
-      if(bank.getInt("scstat",val)>0 && scpb.getRows()>0){
+      if(bank.getInt("scstat",val)>0 && scpb.getRows()>0){ // check SC
         cutSCstat = true;
         scTime = scpb.getFloat("time",bank.getInt("scstat",val)-1);
+        scPath = scpb.getFloat("path",bank.getInt("scstat",val)-1);
+        tofElectron = scTime - (scPath/LIGHTSPEED);
       }
 
-      if(cutCCstat && cutECstat && cutSCstat){
+      if(cutCCstat && cutECstat && cutSCstat){ // proceed if EC && CC && SC
         h1_ElectronP.fill(electron.p());
-        if(electron.p()>=ELECTRON_MOM){
+        if(electron.p()>=ELECTRON_MOM){  // electron momentum cut
           cutElectronMom = true;
           h1_ElectronP_cut.fill(electron.p());
         }
-        LorentzVector vecQ2 = LorentzVector.from(beam);
-        // creates a copy of lorentz vector from electron
-        LorentzVector  vecE = LorentzVector.from(electron);
-        vecQ2.sub(vecE);
-        posQ2 = -vecQ2.mass2();
+        LorentzVector vecQ2 = LorentzVector.from(beam);   // calculate Q-squared, first copy incident e- 4-vector
+        vecQ2.sub(electron);  // calculate Q-squared, subtract scattered e- 4-vector
+        posQ2 = -vecQ2.mass2(); // calcuate Q-squared, make into a positive value
         h1_Q2.fill(posQ2);
 
-        if(posQ2>=Q2_DIS){
+        if(posQ2>=Q2_DIS){  // check Q-squared cut
           cutQ2 = true;
           h1_Q2_cut.fill(posQ2);
         }
 
-        LorentzVector vecW2 = LorentzVector.from(beam);
-        vecW2.add(protonTarget).sub(electron);
+        LorentzVector vecW2 = LorentzVector.from(beam); // calculate W, first copy incident e- 4-vector
+        vecW2.add(protonTarget).sub(electron); // calculate W, add target proton 4-vector and subtract scattered e- 4-vector
         h1_W.fill(vecW2.mass());
-        if(vecW2.mass()>=W_DIS){
+        if(vecW2.mass()>=W_DIS){ // check W cut
           cutW = true;
           h1_W_cut.fill(vecW2.mass());
         }
@@ -469,29 +343,29 @@ while(reader.hasNext()){
         h2_Q2_vs_W.fill(posQ2,vecW2.mass());
         if(cutQ2 && cutW) h2_Q2_vs_W_cut.fill(posQ2,vecW2.mass());
 
-        nu = beamEnergy - electron.e();
+        nu = beamEnergy - electron.e(); // calculate nu
         h1_Nu.fill(nu);
 
-        Xb = posQ2/(2*nu*PhyConsts.massProton());
+        Xb = posQ2/(2*nu*PhyConsts.massProton()); // calcuate x-byorken
         h1_Xb.fill(Xb);
-        Yb = nu/beamEnergy;
+        Yb = nu/beamEnergy; // calculate normalized nu
         h1_Yb.fill(Yb);
 
         h1_cc_nphe.fill(cc_nphe);
-        if(cc_nphe>=NPHE_MIN){
+        if(cc_nphe>=NPHE_MIN){ // check CC nphe cut
           cutCCnphe = true;
           h1_cc_nphe_cut.fill(cc_nphe);
         }
 
-        h2_ECin_vs_ECout.fill(ecin,ecout);
+        h2_ECin_vs_ECout.fill(ecin,ecout); // check EC inner energy cut
         if(ecin >= ECIN_MIN){
           cutECin = true;
           h2_ECin_vs_ECout_cut.fill(ecin,ecout);
         }
 
-        if(electron.p()>0.0){
+        if(electron.p()>0.0){ // check EC total energy vs momentum cut
           h2_P_vs_ECtotP.fill(electron.p(),ectot/electron.p());
-          cutECoverP = EC_SamplingFraction_Cut(electron.p(),ectot,ECsector,12);
+          cutECoverP = myEC.EC_SamplingFraction_Cut(electron.p(),ectot,ECsector,12);
           if(ECsector<1 || ECsector>6){
             println counterFile;
             bank.show();
@@ -507,40 +381,70 @@ while(reader.hasNext()){
           if(cutCCnphe) h1_cc_nphe_withEC_cut.fill(cc_nphe);
         }
 
+        // check cut on EC - SC timing
         h1_dtECSC.fill(ecTime-scTime);
-        cutdtECSC = dt_ECSC(ecTime,scTime);
+        cutdtECSC = myEC.dt_ECSC(ecTime,scTime);
         if(cutdtECSC) h1_dtECSC_cut.fill(ecTime-scTime);
 
+        // check all electron ID cuts
         if(cutQ2 && cutW  && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
-          ElectronVecList << [px,py,pz,electron.e(),Get_TargetIndex(v3electron_corr),posQ2,nu];
+          ElectronVecList << [px,py,pz,electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,tofElectron];
         }
       }
     }
   }
   h1_NumElectronPID.fill(ElectronVecList.size());
 
+  // start proton ID with TOF cut
+  if(PosChargedList.size()>0 && ElectronVecList.size()>0){
+    PosChargedList.each { val ->
+      partLV.setPxPyPzM(bank.getFloat("px",val),  bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
+
+      if(bank.getInt("scstat",val)>0 && scpb.getRows()>0 && myProton.LowMomentumCut(partLV.p())){
+        scTimeProton = scpb.getFloat("time",bank.getInt("scstat",val)-1);
+        scPathProton = scpb.getFloat("path",bank.getInt("scstat",val)-1);
+        tofProton = scTimeProton - (scPathProton/LIGHTSPEED)*Math.sqrt(Math.pow(PhyConsts.massProton()/partLV.p(),2)+1);
+
+        for(int eIndex=0; eIndex<ElectronVecList.size(); eIndex++){
+          def emList = ElectronVecList.get(eIndex);
+          h2_dTOF_VS_P.fill(partLV.p(),tofProton-emList[7]);
+          if(myProton.Get_ProtonTOF_Cut(partLV.p(),tofProton-emList[7])){
+            h2_dTOF_VS_P_cut.fill(partLV.p(),tofProton-emList[7]);
+            ProtonList.add(val);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   // proton id cuts
   h1_NumProtonBank.fill(ProtonList.size());
   if(ProtonList.size()>=NUM_PROTONS){
     ProtonList.each { val ->
       beta = bank.getFloat("beta",val);
-      px = bank.getFloat("px",val);
-      py = bank.getFloat("py",val);
-      pz = bank.getFloat("pz",val);
-      proton.setPxPyPzM(px, py, pz, PhyConsts.massProton());
+      proton.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
 
+      if(bank.getInt("scstat",val)>0 && scpb.getRows()>0){
+        scTimeProton = scpb.getFloat("time",bank.getInt("scstat",val)-1);
+        scPathProton = scpb.getFloat("path",bank.getInt("scstat",val)-1);
+        tofProton = scTimeProton - (scPathProton/LIGHTSPEED)*Math.sqrt(Math.pow(PhyConsts.massProton()/proton.p(),2)+1);
+      }
+
       h2_Vz_phi_prot.fill(v3proton.z(),Math.toDegrees(proton.phi()));
-      Vector3 v3proton_corr = Get_CorrectedVertex(v3proton,proton);
+      Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
       h2_Vz_phi_prot_corr.fill(v3proton_corr.z(),Math.toDegrees(proton.phi()));
 
-      beta_proton = Get_BetaFromMass(proton);
+      beta_proton = myBeta.Get_BetaFromLorentzVecMass(proton);
       h2_dBetaVsP_proton.fill(proton.p(),beta - beta_proton);
-      if(ProtonDBeta_Cut(beta - beta_proton)){
+
+      if(myBeta.ProtonDBeta_Cut(beta - beta_proton)){
         h1_ProtonP.fill(proton.p());
         h2_dBetaVsP_proton_cut.fill(proton.p(),beta - beta_proton);
-        ProtonVecList << [px,py,pz,proton.e(),Get_TargetIndex(v3proton_corr)];
       }
+      // store the proton info that passed the ID cuts
+      ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr),tofProton];
     }
   }
   h1_NumProtonPID.fill(ProtonVecList.size());
@@ -640,10 +544,12 @@ TCanvas c4 = new TCanvas("c4",800,500);
 c4.divide(2,1);
 c4.cd(0);
 c4.getPad().setTitleFontSize(c4_title_size);
+c4.getPad().getAxisY().setLog(true);
 c4.draw(h1_NumElectronBank);
 c4.draw(h1_NumElectronPID,"same");
 c4.cd(1);
 c4.getPad().setTitleFontSize(c4_title_size);
+c4.getPad().getAxisY().setLog(true);
 c4.draw(h1_NumProtonBank);
 c4.draw(h1_NumProtonPID,"same");
 //c4.save("Num_proton.png");
@@ -734,3 +640,51 @@ Var.eachWithIndex { nVar, iVar->
   def cFile = "MRproton_" + nVar + ".png";
   cMR[iVar].save(cFile);
 }
+
+int c8_title_size = 24;
+TCanvas c8 = new TCanvas("c8",800,500);
+c8.divide(2,1);
+c8.cd(0);
+c8.getPad().setTitleFontSize(c8_title_size);
+c8.getPad().getAxisZ().setLog(true);
+c8.draw(h2_dTOF_VS_P);
+
+F1D f1l = new F1D("f1l","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
+double[] highPl = (double[])myProton.Get_ProtonCutPars("highMomLower");
+f1l.setParameters(highPl);
+f1l.setLineWidth(5);
+f1l.setLineStyle(1);
+f1l.setOptStat(0);
+c8.draw(f1l,"same");
+
+F1D f1u = new F1D("f1u","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
+double[] highPu = (double[])myProton.Get_ProtonCutPars("highMomUpper");
+f1u.setParameters(highPu);
+f1u.setLineWidth(5);
+f1u.setLineStyle(1);
+f1u.setOptStat(0);
+c8.draw(f1u,"same");
+
+String fcn9 = "[a]+[b]*x+[c]*x*x+[d]*x*x*x+[e]*x*x*x*x+[f]*x*x*x*x*x+[g]*x*x*x*x*x*x+[h]*x*x*x*x*x*x*x+[i]*x*x*x*x*x*x*x*x+[j]*x*x*x*x*x*x*x*x*x"
+F1D f2l = new F1D("f2l",fcn9, 0.2, 0.8);
+double[] lowPl = (double[])myProton.Get_ProtonCutPars("highMomLower");
+//f2l.setParameters(lowPl);
+f2l.setLineColor(34);
+f2l.setLineWidth(5);
+f2l.setLineStyle(1);
+f2l.setOptStat(0);
+c8.draw(f2l,"same");
+
+F1D f2u = new F1D("f2u",fcn9, 0.2, 0.8);
+double[] lowPu = (double[])myProton.Get_ProtonCutPars("highMomUpper");
+f2u.setParameters(lowPu);
+//f2u.setLineColor(34);
+f2u.setLineWidth(5);
+f2u.setLineStyle(1);
+f2u.setOptStat(0);
+c8.draw(f2u,"same");
+
+c8.cd(1);
+c8.getPad().setTitleFontSize(c8_title_size);
+c8.getPad().getAxisZ().setLog(true);
+c8.draw(h2_dTOF_VS_P_cut);

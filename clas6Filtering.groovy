@@ -2,6 +2,9 @@ import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
 
 def ElectronList =[];
+def PosChargedList =[];
+def NegChargedList =[];
+def NeutralList =[];
 def PhotonList = [];
 def PiPlusList = [];
 def PiMinusList = [];
@@ -18,6 +21,9 @@ cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
 cli.o(longOpt:'output', args:1, argName:'Output file', 'Filtered output file')
+cli._(longOpt:'Npos', args:1, argName:'# of positive particles', type: int, 'Select events with >= Npos')
+cli._(longOpt:'Nneg', args:1, argName:'# of negative particles', type: int, 'Select events with >= Nneg')
+cli._(longOpt:'Nzero', args:1, argName:'# of neutral particles', type: int, 'Select events with >= Nzero')
 cli._(longOpt:'Nproton', args:1, argName:'# of protons', type: int, 'Select events with >= Nproton')
 cli._(longOpt:'Nneutron', args:1, argName:'# of neutrons', type: int, 'Select events with >= Nneutron')
 cli._(longOpt:'Nelectron', args:1, argName:'# of electrons', type: int, 'Select events with >= Nelectron')
@@ -40,6 +46,9 @@ if(options.M) maxEvents = options.M;
 String outfile = "skimmed.hipo";
 if(options.o) outfile = options.o;
 
+def Npos = 0; if(options.Npos) Np = options.Npos;
+def Nneg = 0; if(options.Nneg) Np = options.Nneg;
+def Nzero = 0; if(options.Nzero) Np = options.Nzero;
 def Np = 0; if(options.Nproton) Np = options.Nproton;
 def Nn = 0; if(options.Nneutron) Nn = options.Nneutron;
 def Nem = 0; if(options.Nelectron) Nem = options.Nelectron;
@@ -50,6 +59,9 @@ def Nkp = 0; if(options.Nkplus) Nkp = options.Nkplus;
 def Nkm = 0; if(options.Nkminus) Nkm = options.Nkminus;
 
 println "e-: " + Nem;
+println "N+: " + Npos;
+println "N-: " + Nneg;
+println "N0: " + Nzero;
 println "p: " + Np;
 println "n: " + Nn;
 println "photon: " + Nphot;
@@ -82,6 +94,9 @@ while(reader.hasNext()) {
   if(counterFile % printCounter == 0) println counterFile;
   if(maxEvents!=0 && counterFile >= maxEvents) break;
 
+  PosChargedList.clear();
+  NegChargedList.clear();
+  NeutralList.clear();
   ElectronList.clear();
   PhotonList.clear();
   PiPlusList.clear();
@@ -93,6 +108,9 @@ while(reader.hasNext()) {
   OtherList.clear();
 
   boolean iNem = false;
+  boolean iNpos = false;
+  boolean iNneg = false;
+  boolean iNzero = false;
   boolean iNphot = false;
   boolean iNpip = false;
   boolean iNpim = false;
@@ -104,21 +122,28 @@ while(reader.hasNext()) {
   reader.nextEvent(event);
   event.read(bank);
   for(int i=0;i<bank.getRows();i++){
-    int pid = bank.getInt("pid",i);
-    switch(pid){
-      case 11: if(Nem) ElectronList.add(i); break;
-      case 22: if(Nphot) PhotonList.add(i); break;
-      case 211: if(Npip) PiPlusList.add(i); break;
-      case -211: if(Npim) PiMinusList.add(i); break;
-      case 321: if(Nkp) KPlusList.add(i); break;
-      case -321: if(Nkm) KMinusList.add(i); break;
-      case 2212: if(Np) ProtonList.add(i); break;
-      case 2112: if(Nn) NeutronList.add(i); break;
+    switch(i){
+      case {bank.getInt("pid",i)==11}: if(Nem) ElectronList.add(i); break;
+      case {bank.getInt("pid",i)==22}: if(Nphot) PhotonList.add(i); break;
+      case {bank.getInt("pid",i)==211}: if(Npip) PiPlusList.add(i); break;
+      case {bank.getInt("pid",i)==-211}: if(Npim) PiMinusList.add(i); break;
+      case {bank.getInt("pid",i)==321}: if(Nkp) KPlusList.add(i); break;
+      case {bank.getInt("pid",i)==-321}: if(Nkm) KMinusList.add(i); break;
+      case {bank.getInt("pid",i)==2212}: if(Np) ProtonList.add(i); break;
+      case {bank.getInt("pid",i)==2112}: if(Nn) NeutronList.add(i); break;
+      case {bank.getInt("charge",i)>0}: if(Npos) PosChargedList.add(i); break;
+      case {bank.getInt("charge",i)<0}: if(Nneg) NegChargedList.add(i); break;
+      case {bank.getInt("charge",i)==0}: if(Nzero) NeutralList.add(i); break;
       default: OtherList.add(i); break;
     }
   }
 
+  // check the filter criteria
+  // if a particle is not selected, the default value is zero and the flag is set from FALSE to TRUE.
   if(ElectronList.size()>=Nem) iNem = true;
+  if(PosChargedList.size()>=Npos) iNpos = true;
+  if(NegChargedList.size()>=Nneg) iNneg = true;
+  if(NeutralList.size()>=Nzero) iNzero = true;
   if(PhotonList.size()>=Nphot) iNphot = true;
   if(PiPlusList.size()>=Npip) iNpip = true;
   if(PiMinusList.size()>=Npim) iNpim = true;
@@ -127,7 +152,8 @@ while(reader.hasNext()) {
   if(ProtonList.size()>=Np) iNp = true;
   if(NeutronList.size()>=Nn) iNn = true;
 
-	if(iNem && iNphot && iNpip && iNpim && iNkp && iNkm && iNp && iNn){
+  // condition is AND since particles not selected are zero which sets their flags to TRUE
+	if(iNem && iNphot && iNpip && iNpim && iNkp && iNkm && iNp && iNn && iNpos && iNneg && iNzero){
     output.addEvent(event);
   }
   counterFile++;

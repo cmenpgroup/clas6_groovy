@@ -8,6 +8,10 @@ import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
 
+import eg2Cuts.clas6beta
+
+myBeta = new clas6beta();  // create the beta object
+
 GStyle.getAxisAttributesX().setTitleFontSize(18);
 GStyle.getAxisAttributesY().setTitleFontSize(18);
 GStyle.getAxisAttributesX().setLabelFontSize(18);
@@ -148,15 +152,6 @@ def PhotonSCMsq_Cut = {
   SCMsq_Hi[1] = 0.035156; // Upper limit on photon 2 TOF M^2
 
   boolean ret = (Msq >= SCMsq_Lo[num-1] && Msq < SCMsq_Hi[num-1]);
-  return ret;
-}
-
-def Get_BetaFromMass = {
-  mom, mass->
-  double ret = -99.0;
-  double momSq = mom*mom;
-
-  if(momSq>0.0) ret = 1.0/Math.sqrt((mass*mass)/momSq + 1.0);
   return ret;
 }
 
@@ -573,7 +568,7 @@ for(int j=0;j<args.length;j++){
         py = bank.getFloat("py",val);
         pz = bank.getFloat("pz",val);
         photon.setPxPyPzM(px, py, pz, 0.0);
-        beta_photon = Get_BetaFromMass(photon.p(),0.0);
+        beta_photon = myBeta.Get_BetaFromMass(photon.p(),0.0);
         if(bank.getInt("ecstat",val)>0 && ecpb.getRows()>0){
           cutECstat_photon = true;
           ecTime_photon = ecpb.getFloat("time",bank.getInt("ecstat",val)-1);
