@@ -46,9 +46,9 @@ if(options.M) maxEvents = options.M;
 String outfile = "skimmed.hipo";
 if(options.o) outfile = options.o;
 
-def Npos = 0; if(options.Npos) Np = options.Npos;
-def Nneg = 0; if(options.Nneg) Np = options.Nneg;
-def Nzero = 0; if(options.Nzero) Np = options.Nzero;
+def Npos = 0; if(options.Npos) Npos = options.Npos;
+def Nneg = 0; if(options.Nneg) Nneg = options.Nneg;
+def Nzero = 0; if(options.Nzero) Nzero = options.Nzero;
 def Np = 0; if(options.Nproton) Np = options.Nproton;
 def Nn = 0; if(options.Nneutron) Nn = options.Nneutron;
 def Nem = 0; if(options.Nelectron) Nem = options.Nelectron;
