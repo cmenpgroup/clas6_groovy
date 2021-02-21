@@ -28,6 +28,7 @@ int NUM_ELECTRONS = 1;
 int NUM_PROTONS = 1;
 
 int counterFile = 0;
+int counterProton = 0;
 def ElectronList =[];
 def ProtonList = [];
 def OtherList = [];
@@ -39,9 +40,19 @@ double P_full_lo = 0.0;
 double P_full_hi = 3.0;
 double P_bin_width = 0.03;
 int P_full_bins = (P_full_hi - P_full_lo)/P_bin_width;
+H2F h2_dTOF_VS_P = new H2F("h2_dTOF_VS_P","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
+h2_dTOF_VS_P.setTitleX("Momentum (GeV/c)");
+h2_dTOF_VS_P.setTitleY("#DeltaTOF (ns)");
 H2F h2_dTOF_VS_P_cut = new H2F("h2_dTOF_VS_P_cut","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
 h2_dTOF_VS_P_cut.setTitleX("Momentum (GeV/c)");
 h2_dTOF_VS_P_cut.setTitleY("#DeltaTOF (ns)");
+H2F h2_dTOF_VS_P_cut_not2212 = new H2F("h2_dTOF_VS_P_cut_not2212","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
+h2_dTOF_VS_P_cut_not2212.setTitleX("Momentum (GeV/c)");
+h2_dTOF_VS_P_cut_not2212.setTitleY("#DeltaTOF (ns)");
+
+H1F h1_dTOF_not2212 = new H1F("h1_dTOF_not2212",400,-0.5,399.5);
+h1_dTOF_not2212.setTitleX("PID");
+h1_dTOF_not2212.setTitleY("Counts");
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
 
@@ -125,7 +136,7 @@ while(reader.hasNext()){
   for(int i = 0; i < rows; i++){
     switch(i){
       case {bank.getInt("pid",i)==11}: ElectronList.add(i); break;
-//      case {bank.getInt("pid",i)==2212}: ProtonList.add(i); break;
+//      case {bank.getInt("pid",i)==2212}: PosChargedList.add(i); break;
       case {bank.getInt("charge",i)>0}: PosChargedList.add(i); break;
       default: OtherList.add(i); break;
     }
@@ -221,9 +232,15 @@ while(reader.hasNext()){
 
         for(int eIndex=0; eIndex<ElectronVecList.size(); eIndex++){
           def emList = ElectronVecList.get(eIndex);
+          h2_dTOF_VS_P.fill(partLV.p(),tofProton-emList[10]); // fill histogram before TOF cut
           if(myProton.Get_ProtonTOF_Cut(partLV.p(),tofProton-emList[10])){
-            h2_dTOF_VS_P_cut.fill(partLV.p(),tofProton-emList[10]);
-            ProtonList.add(val);
+            h2_dTOF_VS_P_cut.fill(partLV.p(),tofProton-emList[10]); // fill histogram after TOF cut
+            if(bank.getInt("pid",val)!=2212){
+              h2_dTOF_VS_P_cut_not2212.fill(partLV.p(),tofProton-emList[10]); // pid not equal 2212
+              h1_dTOF_not2212.fill(bank.getInt("pid",val));
+//              System.out.println("pid = " + bank.getInt("pid",val));
+            }
+            ProtonList.add(val); // add particle index for proton that pass the TOF cut
             break;
           }
         }
@@ -234,6 +251,7 @@ while(reader.hasNext()){
   // sort protons
   if(ProtonList.size()>=NUM_PROTONS){
     ProtonList.each { val ->
+      counterProton++;
       proton.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
       Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
@@ -282,12 +300,25 @@ while(reader.hasNext()){
   counterFile++;
 }
 System.out.println("processed (total) = " + counterFile);
+System.out.println("protons (total) = " + counterProton);
 
 tree.close(); // close the tree file
 
-int c8_title_size = 24;
-TCanvas c8 = new TCanvas("c8",600,600);
-c8.cd(0);
-c8.getPad().setTitleFontSize(c8_title_size);
-c8.getPad().getAxisZ().setLog(true);
-c8.draw(h2_dTOF_VS_P_cut);
+int c1_title_size = 24;
+TCanvas c1 = new TCanvas("c1",1000,1000);
+c1.divide(2,2);
+c1.cd(0);
+c1.getPad().setTitleFontSize(c1_title_size);
+c1.getPad().getAxisZ().setLog(true);
+c1.draw(h2_dTOF_VS_P);
+c1.cd(1);
+c1.getPad().setTitleFontSize(c1_title_size);
+c1.getPad().getAxisZ().setLog(true);
+c1.draw(h2_dTOF_VS_P_cut);
+c1.cd(2);
+c1.getPad().setTitleFontSize(c1_title_size);
+c1.getPad().getAxisZ().setLog(true);
+c1.draw(h2_dTOF_VS_P_cut_not2212);
+c1.cd(3);
+c1.getPad().setTitleFontSize(c1_title_size);
+c1.draw(h1_dTOF_not2212);

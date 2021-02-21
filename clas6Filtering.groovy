@@ -89,6 +89,7 @@ output.open(outfile);
 
 Event event = new Event();
 Bank bank = new Bank(reader.getSchemaFactory().getSchema("EVENT::particle"));
+Bank head = new Bank(reader.getSchemaFactory().getSchema("HEADER::info"));
 
 while(reader.hasNext()) {
   if(counterFile % printCounter == 0) println counterFile;
@@ -121,21 +122,20 @@ while(reader.hasNext()) {
 
   reader.nextEvent(event);
   event.read(bank);
+  event.read(head);
+
   for(int i=0;i<bank.getRows();i++){
-    switch(i){
-      case {bank.getInt("pid",i)==11}: if(Nem) ElectronList.add(i); break;
-      case {bank.getInt("pid",i)==22}: if(Nphot) PhotonList.add(i); break;
-      case {bank.getInt("pid",i)==211}: if(Npip) PiPlusList.add(i); break;
-      case {bank.getInt("pid",i)==-211}: if(Npim) PiMinusList.add(i); break;
-      case {bank.getInt("pid",i)==321}: if(Nkp) KPlusList.add(i); break;
-      case {bank.getInt("pid",i)==-321}: if(Nkm) KMinusList.add(i); break;
-      case {bank.getInt("pid",i)==2212}: if(Np) ProtonList.add(i); break;
-      case {bank.getInt("pid",i)==2112}: if(Nn) NeutronList.add(i); break;
-      case {bank.getInt("charge",i)>0}: if(Npos) PosChargedList.add(i); break;
-      case {bank.getInt("charge",i)<0}: if(Nneg) NegChargedList.add(i); break;
-      case {bank.getInt("charge",i)==0}: if(Nzero) NeutralList.add(i); break;
-      default: OtherList.add(i); break;
-    }
+    if(bank.getInt("charge",i)>0 && Npos) PosChargedList.add(i);
+    if(bank.getInt("charge",i)<0 && Nneg) NegChargedList.add(i);
+    if(bank.getInt("charge",i)==0 && Nzero) NeutralList.add(i);
+    if(bank.getInt("pid",i)==11 && Nem) ElectronList.add(i);
+    if(bank.getInt("pid",i)==22 && Nphot) PhotonList.add(i);
+    if(bank.getInt("pid",i)==211 && Npip) PiPlusList.add(i);
+    if(bank.getInt("pid",i)==-211 && Npim) PiMinusList.add(i);
+    if(bank.getInt("pid",i)==321 && Nkp) KPlusList.add(i);
+    if(bank.getInt("pid",i)==-321 && Nkm) KMinusList.add(i);
+    if(bank.getInt("pid",i)==2212 && Np) ProtonList.add(i);
+    if(bank.getInt("pid",i)==2112 && Nn) NeutronList.add(i);
   }
 
   // check the filter criteria
