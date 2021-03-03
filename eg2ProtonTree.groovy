@@ -28,7 +28,9 @@ int NUM_ELECTRONS = 1;
 int NUM_PROTONS = 1;
 
 int counterFile = 0;
-int counterProton = 0;
+int counterProtonD2 = 0;
+int counterProtonSolid = 0;
+int counterProtonOther = 0;
 def ElectronList =[];
 def ProtonList = [];
 def OtherList = [];
@@ -71,6 +73,8 @@ cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
 cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name')
+cli.g(longOpt:'graph', 'Graph monitoring histograms')
+
 
 def options = cli.parse(args);
 if (!options) return;
@@ -84,6 +88,9 @@ if(options.M) maxEvents = options.M;
 
 def outFile = "eg2ProtonNtuple.hipo";
 if(options.o) outFile = options.o;
+
+boolean bGraph = false;
+if(options.g) bGraph = true;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -251,11 +258,16 @@ while(reader.hasNext()){
   // sort protons
   if(ProtonList.size()>=NUM_PROTONS){
     ProtonList.each { val ->
-      counterProton++;
       proton.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
       Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
       ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr)];
+
+      switch(myTarget.Get_TargetIndex(v3proton_corr)){
+        case 1: counterProtonD2++; break;
+        case 2: counterProtonSolid++; break;
+        default: counterProtonOther++; break;
+      }
     }
   }
 
@@ -300,25 +312,29 @@ while(reader.hasNext()){
   counterFile++;
 }
 System.out.println("processed (total) = " + counterFile);
-System.out.println("protons (total) = " + counterProton);
+System.out.println("protons (D2) = " + counterProtonD2);
+System.out.println("protons (Solid) = " + counterProtonSolid);
+System.out.println("protons (Other) = " + counterProtonOther);
 
 tree.close(); // close the tree file
 
-int c1_title_size = 24;
-TCanvas c1 = new TCanvas("c1",1000,1000);
-c1.divide(2,2);
-c1.cd(0);
-c1.getPad().setTitleFontSize(c1_title_size);
-c1.getPad().getAxisZ().setLog(true);
-c1.draw(h2_dTOF_VS_P);
-c1.cd(1);
-c1.getPad().setTitleFontSize(c1_title_size);
-c1.getPad().getAxisZ().setLog(true);
-c1.draw(h2_dTOF_VS_P_cut);
-c1.cd(2);
-c1.getPad().setTitleFontSize(c1_title_size);
-c1.getPad().getAxisZ().setLog(true);
-c1.draw(h2_dTOF_VS_P_cut_not2212);
-c1.cd(3);
-c1.getPad().setTitleFontSize(c1_title_size);
-c1.draw(h1_dTOF_not2212);
+if(bGraph){
+  int c1_title_size = 24;
+  TCanvas c1 = new TCanvas("c1",1000,1000);
+  c1.divide(2,2);
+  c1.cd(0);
+  c1.getPad().setTitleFontSize(c1_title_size);
+  c1.getPad().getAxisZ().setLog(true);
+  c1.draw(h2_dTOF_VS_P);
+  c1.cd(1);
+  c1.getPad().setTitleFontSize(c1_title_size);
+  c1.getPad().getAxisZ().setLog(true);
+  c1.draw(h2_dTOF_VS_P_cut);
+  c1.cd(2);
+  c1.getPad().setTitleFontSize(c1_title_size);
+  c1.getPad().getAxisZ().setLog(true);
+  c1.draw(h2_dTOF_VS_P_cut_not2212);
+  c1.cd(3);
+  c1.getPad().setTitleFontSize(c1_title_size);
+  c1.draw(h1_dTOF_not2212);
+}

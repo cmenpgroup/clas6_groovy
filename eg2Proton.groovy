@@ -30,6 +30,7 @@ int YELLOW = 35;
 double LIGHTSPEED = 30.0; // speed of light in cm/ns
 double W_DIS = 2.0;
 double Q2_DIS = 1.0;
+double YB_DIS = 0.85;
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
@@ -57,125 +58,170 @@ double beamEnergy = 5.1;
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 
+def dirname = "/electron";
+TDirectory dir = new TDirectory();
+dir.mkdir(dirname);
+dir.cd(dirname);
+
 H1F h1_Q2 = new H1F("h1_Q2","Q^2 (GeV^2)","Counts",100,0.0,5.0);
 h1_Q2.setTitle("Experiment: eg2");
+dir.addDataSet(h1_Q2);
 
 H1F h1_Q2_cut = new H1F("h1_Q2_cut","Q^2 (GeV^2)","Counts",100,0.0,5.0);
 h1_Q2_cut.setTitle("Experiment: eg2");
 h1_Q2_cut.setFillColor(GREEN);
+dir.addDataSet(h1_Q2_cut);
 
 H1F h1_Nu = new H1F("h1_Nu","#nu (GeV)","Counts",100,0.0,5.0);
 h1_Nu.setTitle("Experiment: eg2");
 h1_Nu.setFillColor(GREEN);
+dir.addDataSet(h1_Nu);
 
 H1F h1_Xb = new H1F("h1_Xb","X_b","Counts",100,0.0,1.5);
 h1_Xb.setTitle("Experiment: eg2");
 h1_Xb.setFillColor(GREEN);
+dir.addDataSet(h1_Xb);
 
 H1F h1_Yb = new H1F("h1_Yb","Y_b","Counts",100,0.0,1.0);
 h1_Yb.setTitle("Experiment: eg2");
-h1_Yb.setFillColor(GREEN);
+dir.addDataSet(h1_Yb);
+
+H1F h1_Yb_cut = new H1F("h1_Yb_cut","Y_b","Counts",100,0.0,1.0);
+h1_Yb_cut.setTitle("Experiment: eg2");
+h1_Yb_cut.setFillColor(GREEN);
+dir.addDataSet(h1_Yb_cut);
 
 H1F h1_W = new H1F("h1_W","W (GeV)","Counts",160,0.0,3.2);
 h1_W.setTitle("Experiment: eg2");
+dir.addDataSet(h1_W);
 
 H1F h1_W_cut = new H1F("h1_W_cut","W (GeV)","Counts",160,0.0,3.2);
 h1_W_cut.setTitle("Experiment: eg2");
 h1_W_cut.setFillColor(GREEN);
+dir.addDataSet(h1_W_cut);
 
 H2F h2_Q2_vs_W = new H2F("h1_Q2_vs_W","Experiment: eg2",100,0.0,5.0,160,0.0,3.2);
 h2_Q2_vs_W.setTitleX("Q^2 (GeV^2)");
 h2_Q2_vs_W.setTitleY("W (GeV)");
+dir.addDataSet(h2_Q2_vs_W);
 
 H2F h2_Q2_vs_W_cut = new H2F("h1_Q2_vs_W_cut","Experiment: eg2",100,0.0,5.0,160,0.0,3.2);
 h2_Q2_vs_W_cut.setTitleX("Q^2 (GeV^2)");
 h2_Q2_vs_W_cut.setTitleY("W (GeV)");
+dir.addDataSet(h2_Q2_vs_W_cut);
 
 H1F h1_ElectronP = new H1F("h1_ElectronP","Momentum(e^-) (GeV)","Counts",100,0.0,5.0);
 h1_ElectronP.setTitle("Experiment: eg2");
+dir.addDataSet(h1_ElectronP);
 
 H1F h1_ElectronP_cut = new H1F("h1_ElectronP_cut","Momentum(e^-) (GeV)","Counts",100,0.0,5.0);
 h1_ElectronP_cut.setTitle("Experiment: eg2");
 h1_ElectronP_cut.setFillColor(GREEN);
+dir.addDataSet(h1_ElectronP_cut);
 
 H1F h1_cc_nphe = new H1F("h1_cc_nphe","Number of Photoelectrons","Counts",200,0.0,200.0);
 h1_cc_nphe.setTitle("Experiment: eg2");
+dir.addDataSet(h1_cc_nphe);
 
 H1F h1_cc_nphe_cut = new H1F("h1_cc_nphe_cut","Number of Photoelectrons","Counts",200,0.0,200.0);
 h1_cc_nphe_cut.setTitle("Experiment: eg2");
 h1_cc_nphe_cut.setFillColor(GREEN);
+dir.addDataSet(h1_cc_nphe_cut);
 
 H1F h1_cc_nphe_withEC = new H1F("h1_cc_nphe_withEC","Number of Photoelectrons","Counts",200,0.0,200.0);
 h1_cc_nphe_withEC.setTitle("Experiment: eg2");
+dir.addDataSet(h1_cc_nphe_withEC);
 
 H1F h1_cc_nphe_withEC_cut = new H1F("h1_cc_nphe_withEC_cut","Number of Photoelectrons","Counts",200,0.0,200.0);
 h1_cc_nphe_withEC_cut.setTitle("Experiment: eg2");
 h1_cc_nphe_withEC_cut.setFillColor(GREEN);
+dir.addDataSet(h1_cc_nphe_withEC_cut);
 
 H2F h2_ECin_vs_ECout= new H2F("h1_ECin_vs_ECout","Experiment: eg2",100,0.0,1.0,100,0.0,1.0);
 h2_ECin_vs_ECout.setTitleX("ECin (GeV^2)");
 h2_ECin_vs_ECout.setTitleY("ECout (GeV)");
+dir.addDataSet(h2_ECin_vs_ECout);
 
-H2F h2_ECin_vs_ECout_cut= new H2F("h1_ECin_vs_ECout","Experiment: eg2",100,0.0,1.0,100,0.0,1.0);
+H2F h2_ECin_vs_ECout_cut= new H2F("h1_ECin_vs_ECout_cut","Experiment: eg2",100,0.0,1.0,100,0.0,1.0);
 h2_ECin_vs_ECout_cut.setTitleX("ECin (GeV^2)");
 h2_ECin_vs_ECout_cut.setTitleY("ECout (GeV)");
+dir.addDataSet(h2_ECin_vs_ECout_cut);
 
 H2F h2_P_vs_ECtotP = new H2F("h2_P_vs_ECtotP","Experiment: eg2",100,0.0,5.0,100,0.0,0.5);
 h2_P_vs_ECtotP.setTitleX("Momentum(e^-) (GeV)");
 h2_P_vs_ECtotP.setTitleY("ECtot (GeV)");
+dir.addDataSet(h2_P_vs_ECtotP);
 
 H2F h2_P_vs_ECtotP_cut = new H2F("h2_P_vs_ECtotP_cut","Experiment: eg2",100,0.0,5.0,100,0.0,0.5);
 h2_P_vs_ECtotP_cut.setTitleX("Momentum(e^-) (GeV)");
 h2_P_vs_ECtotP_cut.setTitleY("ECtot (GeV)");
+dir.addDataSet(h2_P_vs_ECtotP_cut);
 
 H1F h1_dtECSC = new H1F("h1_dtECSC","t(EC)-t(SC) (ns)","Counts",100,-10.0,10.0);
 h1_dtECSC.setTitle("Experiment: eg2");
+dir.addDataSet(h1_dtECSC);
 
 H1F h1_dtECSC_cut = new H1F("h1_dtECSC_cut","t(EC)-t(SC) (ns)","Counts",100,-10.0,10.0);
 h1_dtECSC_cut.setTitle("Experiment: eg2");
 h1_dtECSC_cut.setFillColor(GREEN);
+dir.addDataSet(h1_dtECSC_cut);
 
 H1F h1_NumElectronBank = new H1F("h1_NumElectronBank","# of e^{-} per event","Counts",10,0,10);
 h1_NumElectronBank.setTitle("Experiment: eg2");
+dir.addDataSet(h1_NumElectronBank);
 
 H1F h1_NumElectronPID = new H1F("h1_NumElectronPID","# of e^{-} per event","Counts",10,0,10);
 h1_NumElectronPID.setTitle("Experiment: eg2");
 h1_NumElectronPID.setFillColor(GREEN);
+dir.addDataSet(h1_NumElectronPID);
+
+String dirProton = '/proton';
+dir.mkdir(dirProton);
+dir.cd(dirProton);
 
 H1F h1_NumProtonBank = new H1F("h1_NumProtonBank","# of protons per event","Counts",10,0,10);
 h1_NumProtonBank.setTitle("Experiment: eg2");
+dir.addDataSet(h1_NumProtonBank);
 
 H1F h1_NumProtonPID = new H1F("h1_NumProtonPID","# of protons per event","Counts",10,0,10);
 h1_NumProtonPID.setTitle("Experiment: eg2");
 h1_NumProtonPID.setFillColor(GREEN);
+dir.addDataSet(h1_NumProtonPID);
 
 H1F h1_ProtonP = new H1F("h1_ProtonP","Momentum(proton) (GeV)","Counts",100,0.0,3.5);
 h1_ProtonP.setTitle("Experiment: eg2");
 h1_ProtonP.setFillColor(GREEN);
+dir.addDataSet(h1_ProtonP);
 
 H2F h2_dBetaVsP_proton = new H2F("h2_dBetaVsP_proton","Experiment: eg2",100,0.0,3.5,200,-0.1,0.1);
 h2_dBetaVsP_proton.setTitleX("Momentum (GeV/c)");
 h2_dBetaVsP_proton.setTitleY("#Delta #beta (proton)");
+dir.addDataSet(h2_dBetaVsP_proton);
 
 H2F h2_dBetaVsP_proton_cut = new H2F("h2_dBetaVsP_proton_cut","Experiment: eg2",100,0.0,3.5,200,-0.1,0.1);
 h2_dBetaVsP_proton_cut.setTitleX("Momentum (GeV/c)");
 h2_dBetaVsP_proton_cut.setTitleY("#Delta #beta (proton)");
+dir.addDataSet(h2_dBetaVsP_proton_cut);
 
 H2F h2_Vz_phi = new H2F("h2_Vz_phi","Experiment: eg2 - Electrons",100,-33,-20.0,360,-180.0,180.0);
 h2_Vz_phi.setTitleX("Vertex z (cm)");
 h2_Vz_phi.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Vz_phi);
 
 H2F h2_Vz_phi_corr = new H2F("h2_Vz_phi_corr","Experiment: eg2 - Electrons",100,-33,-20.0,360,-180.0,180.0);
 h2_Vz_phi_corr.setTitleX("Vertex z (cm)");
 h2_Vz_phi_corr.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Vz_phi_corr);
 
 H2F h2_Vz_phi_prot = new H2F("h2_Vz_phi_prot","Experiment: eg2 - Protons",100,-33,-20.0,360,-180.0,180.0);
 h2_Vz_phi_prot.setTitleX("Vertex z (cm)");
 h2_Vz_phi_prot.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Vz_phi_prot);
 
 H2F h2_Vz_phi_prot_corr = new H2F("h2_Vz_phi_prot_corr","Experiment: eg2 - Protons",100,-33,-20.0,360,-180.0,180.0);
 h2_Vz_phi_prot_corr.setTitleX("Vertex z (cm)");
 h2_Vz_phi_prot_corr.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Vz_phi_prot_corr);
 
 double P_full_lo = 0.0;
 double P_full_hi = 3.0;
@@ -184,13 +230,15 @@ int P_full_bins = (P_full_hi - P_full_lo)/P_bin_width;
 H2F h2_dTOF_VS_P = new H2F("h2_dTOF_VS_P","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
 h2_dTOF_VS_P.setTitleX("Momentum (GeV/c)");
 h2_dTOF_VS_P.setTitleY("#DeltaTOF (ns)");
+dir.addDataSet(h2_dTOF_VS_P);
 
 H2F h2_dTOF_VS_P_cut = new H2F("h2_dTOF_VS_P_cut","Experiment: eg2 - Protons",P_full_bins,P_full_lo,P_full_hi,160,-16.0,16.0);
 h2_dTOF_VS_P_cut.setTitleX("Momentum (GeV/c)");
 h2_dTOF_VS_P_cut.setTitleY("#DeltaTOF (ns)");
+dir.addDataSet(h2_dTOF_VS_P_cut);
 
 String[] TgtLabel = ["D2","Nuc","Other"];
-String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","zh","pT^2 (GeV^2)","zLC"];
+String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z_LC"];
 String[] Var = ["Qsq","nu","zh","pT2","zLC"];
 int[] nbins = [50,50,30,30,30];
 double[] xlo = [Q2_DIS,2.0,0.0,0.0,0.0];
@@ -203,6 +251,30 @@ TgtLabel.eachWithIndex {nTgt, iTgt->
     h1_nProton[iVar][iTgt] = new H1F(hname,xLabel[iVar],"Counts",nbins[iVar],xlo[iVar],xhi[iVar]);
     h1_nProton[iVar][iTgt].setTitle("eg2 - " + nTgt);
     h1_nProton[iVar][iTgt].setFillColor(YELLOW - iTgt);
+    dir.addDataSet(h1_nProton[iVar][iTgt]);
+  }
+}
+
+double[] Q2bins = [Q2_DIS,1.33,1.76,4.10];
+double[] Nubins = [2.20,3.20,3.73,4.25];
+H1F[][][] h1_zLC = new H1F[Q2bins.size()-1][Nubins.size()-1][TgtLabel.size()];
+H1F[][][] h1_zh = new H1F[Q2bins.size()-1][Nubins.size()-1][TgtLabel.size()];
+
+TgtLabel.eachWithIndex {nTgt, iTgt->
+  for(int iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
+    for(int iNu = 0; iNu < Nubins.size()-1; iNu++){
+      hname = "h1_zLC_" + nTgt + "_Qsq" + iQsq + "_Nu" + iNu;
+      h1_zLC[iQsq][iNu][iTgt] = new H1F(hname,xLabel[4],"Counts",15,0.0,1.0);
+      h1_zLC[iQsq][iNu][iTgt].setTitle("eg2 - " + nTgt);
+      h1_zLC[iQsq][iNu][iTgt].setFillColor(YELLOW - iTgt);
+      dir.addDataSet(h1_zLC[iQsq][iNu][iTgt]);
+
+      hname = "h1_zh_" + nTgt + "_Qsq" + iQsq + "_Nu" + iNu;
+      h1_zh[iQsq][iNu][iTgt] = new H1F(hname,xLabel[2],"Counts",15,0.0,1.0);
+      h1_zh[iQsq][iNu][iTgt].setTitle("eg2 - " + nTgt);
+      h1_zh[iQsq][iNu][iTgt].setFillColor(YELLOW - iTgt);
+      dir.addDataSet(h1_zh[iQsq][iNu][iTgt]);
+    }
   }
 }
 
@@ -210,6 +282,7 @@ def cli = new CliBuilder(usage:'eg2Proton.groovy [options] infile1 infile2 ...')
 cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
+cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -220,6 +293,9 @@ if(options.c) printCounter = options.c;
 
 def maxEvents = 0;
 if(options.M) maxEvents = options.M;
+
+String solidTgt = "C";
+if(options.s) solidTgt = options.s;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -348,8 +424,13 @@ while(reader.hasNext()){
 
         Xb = posQ2/(2*nu*PhyConsts.massProton()); // calcuate x-byorken
         h1_Xb.fill(Xb);
+
         Yb = nu/beamEnergy; // calculate normalized nu
         h1_Yb.fill(Yb);
+        if(Yb<=YB_DIS){  // check Yb cut
+          cutYb = true;
+          h1_Yb_cut.fill(Yb);
+        }
 
         h1_cc_nphe.fill(cc_nphe);
         if(cc_nphe>=NPHE_MIN){ // check CC nphe cut
@@ -387,7 +468,7 @@ while(reader.hasNext()){
         if(cutdtECSC) h1_dtECSC_cut.fill(ecTime-scTime);
 
         // check all electron ID cuts
-        if(cutQ2 && cutW  && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
+        if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
           ElectronVecList << [px,py,pz,electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,tofElectron];
         }
       }
@@ -436,11 +517,12 @@ while(reader.hasNext()){
       Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
       h2_Vz_phi_prot_corr.fill(v3proton_corr.z(),Math.toDegrees(proton.phi()));
 
+      h1_ProtonP.fill(proton.p());
+
       beta_proton = myBeta.Get_BetaFromLorentzVecMass(proton);
       h2_dBetaVsP_proton.fill(proton.p(),beta - beta_proton);
 
       if(myBeta.ProtonDBeta_Cut(beta - beta_proton)){
-        h1_ProtonP.fill(proton.p());
         h2_dBetaVsP_proton_cut.fill(proton.p(),beta - beta_proton);
       }
       // store the proton info that passed the ID cuts
@@ -463,7 +545,30 @@ while(reader.hasNext()){
           h1_nProton[1][pTgt].fill(emNu);
           h1_nProton[2][pTgt].fill(protonVec.e()/emNu); // zh - fractional quark energy
           h1_nProton[3][pTgt].fill(protonVec.pt()*protonVec.pt());
-          h1_nProton[4][pTgt].fill((protonVec.e() + protonVec.pz())/(PhyConsts.massProton() + 2*emNu)); // zLC - lightcone fractional quark energy
+          zLC = (protonVec.e() + protonVec.pz())/(PhyConsts.massProton() + 2*emNu);
+          h1_nProton[4][pTgt].fill(zLC); // zLC - lightcone fractional quark energy
+
+          boolean foundQsq = false;
+          for(int iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
+            if(emQsq>=Q2bins[iQsq] && emQsq<Q2bins[iQsq+1]){
+              indexQsq = iQsq;
+              foundQsq = true;
+              break;
+            }
+          }
+
+          boolean foundNu = false;
+          for(int iNu = 0; iNu < Nubins.size()-1; iNu++){
+            if(emNu>=Nubins[iNu] && emNu<Nubins[iNu+1]){
+              indexNu = iNu;
+              foundNu = true;
+              break;
+            }
+          }
+          if(foundQsq && foundNu){
+            h1_zh[indexQsq][indexNu][pTgt].fill(protonVec.e()/emNu);
+            h1_zLC[indexQsq][indexNu][pTgt].fill(zLC);
+          }
         }
       }
     }
@@ -502,22 +607,25 @@ c2.draw(h1_Xb);
 c2.cd(6);
 c2.getPad().setTitleFontSize(c2_title_size);
 c2.draw(h1_Yb);
+c2.draw(h1_Yb_cut,"same");
 c2.cd(7);
 c2.getPad().setTitleFontSize(c2_title_size);
 c2.draw(h1_dtECSC);
 c2.draw(h1_dtECSC_cut,"same");
 c2.cd(8);
 c2.getPad().setTitleFontSize(c2_title_size);
-c2.draw(h1_ElectronP);
-c2.draw(h1_ElectronP_cut,"same");
-c2.cd(9);
-c2.getPad().setTitleFontSize(c2_title_size);
-c2.draw(h1_cc_nphe);
-c2.draw(h1_cc_nphe_cut,"same");
-c2.cd(10);
-c2.getPad().setTitleFontSize(c2_title_size);
+//c2.draw(h1_cc_nphe);
+//c2.draw(h1_cc_nphe_cut,"same");
 c2.draw(h1_cc_nphe_withEC);
 c2.draw(h1_cc_nphe_withEC_cut,"same");
+c2.cd(9);
+c2.getPad().setTitleFontSize(c2_title_size);
+c2.draw(h1_ElectronP);
+c2.draw(h1_ElectronP_cut,"same");
+c2.cd(10);
+c2.getPad().setTitleFontSize(c2_title_size);
+c2.draw(h1_ProtonP);
+
 //c2.save("ElectronID_proton.png");
 
 int c3_title_size = 24;
@@ -604,6 +712,10 @@ TgtLabel.eachWithIndex {nTgt, iTgt->
   }
 }
 
+String dirMR = '/multiplicity';
+dir.mkdir(dirMR);
+dir.cd(dirMR);
+
 H1F[] h1_mrProton = new H1F[Var.size()];
 GraphErrors[] gr_mrProton = new GraphErrors[Var.size()];
 Var.eachWithIndex{nVar, iVar->
@@ -613,13 +725,15 @@ Var.eachWithIndex{nVar, iVar->
   h1_mrProton[iVar].setName("h1_mrProton_" + nVar);
   h1_mrProton[iVar].setFillColor(GREEN);
   gr_mrProton[iVar] = h1_mrProton[iVar].getGraph();
-  gr_mrProton[iVar].setTitle("eg2 - C/D2");
+  gr_mrProton[iVar].setName("gr_mrProton_" + nVar);
+  gr_mrProton[iVar].setTitle("eg2 - " + solidTgt + "/D2");
   gr_mrProton[iVar].setTitleX(xLabel[iVar]);
   gr_mrProton[iVar].setTitleY("R^p");
   gr_mrProton[iVar].setMarkerColor(3);
   gr_mrProton[iVar].setLineColor(3);
   gr_mrProton[iVar].setMarkerSize(3);
   c7.draw(gr_mrProton[iVar]);
+  dir.addDataSet(gr_mrProton[iVar]); // add to the histogram file
 }
 //c7.save("MRproton.png");
 
@@ -652,7 +766,7 @@ c8.draw(h2_dTOF_VS_P);
 F1D f1l = new F1D("f1l","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
 double[] highPl = (double[])myProton.Get_ProtonCutPars("highMomLower");
 f1l.setParameters(highPl);
-f1l.setLineWidth(5);
+f1l.setLineWidth(3);
 f1l.setLineStyle(1);
 f1l.setOptStat(0);
 c8.draw(f1l,"same");
@@ -660,26 +774,26 @@ c8.draw(f1l,"same");
 F1D f1u = new F1D("f1u","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
 double[] highPu = (double[])myProton.Get_ProtonCutPars("highMomUpper");
 f1u.setParameters(highPu);
-f1u.setLineWidth(5);
+f1u.setLineWidth(3);
 f1u.setLineStyle(1);
 f1u.setOptStat(0);
 c8.draw(f1u,"same");
 
 String fcn9 = "[a]+[b]*x+[c]*x*x+[d]*x*x*x+[e]*x*x*x*x+[f]*x*x*x*x*x+[g]*x*x*x*x*x*x+[h]*x*x*x*x*x*x*x+[i]*x*x*x*x*x*x*x*x+[j]*x*x*x*x*x*x*x*x*x"
 F1D f2l = new F1D("f2l",fcn9, 0.2, 0.8);
-double[] lowPl = (double[])myProton.Get_ProtonCutPars("highMomLower");
-//f2l.setParameters(lowPl);
-f2l.setLineColor(34);
-f2l.setLineWidth(5);
+double[] lowPl = (double[])myProton.Get_ProtonCutPars("lowMomLower");
+f2l.setParameters(lowPl);
+//f2l.setLineColor(34);
+f2l.setLineWidth(3);
 f2l.setLineStyle(1);
 f2l.setOptStat(0);
 c8.draw(f2l,"same");
 
 F1D f2u = new F1D("f2u",fcn9, 0.2, 0.8);
-double[] lowPu = (double[])myProton.Get_ProtonCutPars("highMomUpper");
+double[] lowPu = (double[])myProton.Get_ProtonCutPars("lowMomUpper");
 f2u.setParameters(lowPu);
 //f2u.setLineColor(34);
-f2u.setLineWidth(5);
+f2u.setLineWidth(3);
 f2u.setLineStyle(1);
 f2u.setOptStat(0);
 c8.draw(f2u,"same");
@@ -688,3 +802,74 @@ c8.cd(1);
 c8.getPad().setTitleFontSize(c8_title_size);
 c8.getPad().getAxisZ().setLog(true);
 c8.draw(h2_dTOF_VS_P_cut);
+
+int c9_title_size = 24;
+TCanvas c9 = new TCanvas("c9",1200,500);
+c9.divide(3,1);
+
+String dirzLC = '/zLC';
+dir.mkdir(dirzLC);
+dir.cd(dirzLC);
+
+H1F[][] h1_mrzLC = new H1F[Q2bins.size()-1][Nubins.size()-1];
+GraphErrors[][] gr_mrzLC = new GraphErrors[Q2bins.size()-1][Nubins.size()-1];
+for(int iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
+  c9.cd(iQsq);
+  c9.getPad().setTitleFontSize(c9_title_size);
+  for(int iNu = 0; iNu < Nubins.size()-1; iNu++){
+    h1_mrzLC[iQsq][iNu] = H1F.divide(h1_zLC[iQsq][iNu][1],h1_zLC[iQsq][iNu][0]);
+    h1_mrzLC[iQsq][iNu].setName("h1_mrzLC_Qsq" + iQsq + "_Nu" + iNu);
+    h1_mrzLC[iQsq][iNu].setFillColor(GREEN);
+    gr_mrzLC[iQsq][iNu] = h1_mrzLC[iQsq][iNu].getGraph();
+    gr_mrzLC[iQsq][iNu].setName("gr_mrzLC_Qsq" + iQsq + "_Nu" + iNu);
+    gr_mrzLC[iQsq][iNu].setTitle("eg2 - " + solidTgt + "/D2");
+    gr_mrzLC[iQsq][iNu].setTitleX(xLabel[4]);
+    gr_mrzLC[iQsq][iNu].setTitleY("R^p");
+    gr_mrzLC[iQsq][iNu].setMarkerColor(3+iNu);
+    gr_mrzLC[iQsq][iNu].setLineColor(3+iNu);
+    gr_mrzLC[iQsq][iNu].setMarkerSize(3);
+    if(iNu==0){
+      c9.draw(gr_mrzLC[iQsq][iNu]);
+    }else{
+      c9.draw(gr_mrzLC[iQsq][iNu],"same");
+    }
+    dir.addDataSet(gr_mrzLC[iQsq][iNu]); // add to the histogram file
+  }
+}
+
+int c10_title_size = 24;
+TCanvas c10 = new TCanvas("c10",1200,500);
+c10.divide(3,1);
+
+String dirzh = '/zh';
+dir.mkdir(dirzh);
+dir.cd(dirzh);
+
+H1F[][] h1_mrzh = new H1F[Q2bins.size()-1][Nubins.size()-1];
+GraphErrors[][] gr_mrzh = new GraphErrors[Q2bins.size()-1][Nubins.size()-1];
+for(int iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
+  c10.cd(iQsq);
+  c10.getPad().setTitleFontSize(c10_title_size);
+  for(int iNu = 0; iNu < Nubins.size()-1; iNu++){
+    h1_mrzh[iQsq][iNu] = H1F.divide(h1_zh[iQsq][iNu][1],h1_zh[iQsq][iNu][0]);
+    h1_mrzh[iQsq][iNu].setName("h1_mrzh_Qsq" + iQsq + "_Nu" + iNu);
+    h1_mrzh[iQsq][iNu].setFillColor(GREEN);
+    gr_mrzh[iQsq][iNu] = h1_mrzh[iQsq][iNu].getGraph();
+    gr_mrzh[iQsq][iNu].setName("gr_mrzh_Qsq" + iQsq + "_Nu" + iNu);
+    gr_mrzh[iQsq][iNu].setTitle("eg2 - " + solidTgt + "/D2");
+    gr_mrzh[iQsq][iNu].setTitleX(xLabel[2]);
+    gr_mrzh[iQsq][iNu].setTitleY("R^p");
+    gr_mrzh[iQsq][iNu].setMarkerColor(3+iNu);
+    gr_mrzh[iQsq][iNu].setLineColor(3+iNu);
+    gr_mrzh[iQsq][iNu].setMarkerSize(3);
+    if(iNu==0){
+      c10.draw(gr_mrzh[iQsq][iNu]);
+    }else{
+      c10.draw(gr_mrzh[iQsq][iNu],"same");
+    }
+    dir.addDataSet(gr_mrzh[iQsq][iNu]); // add to the histogram file
+  }
+}
+
+String histFile = "eg2Proton_hists_" + solidTgt + ".hipo";
+dir.writeFile(histFile);
