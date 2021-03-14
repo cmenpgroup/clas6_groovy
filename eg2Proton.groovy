@@ -273,8 +273,8 @@ String[] TgtLabel = ["D2","Nuc","Other"];
 String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z_LC"];
 String[] Var = ["Qsq","nu","zh","pT2","zLC"];
 int[] nbins = [50,50,30,30,30];
-double[] xlo = [Q2_DIS,2.0,0.0,0.0,0.0];
-double[] xhi = [5.0,4.5,1.0,2.0,1.0];
+double[] xlo = [Q2_DIS,2.2,0.0,0.0,0.0];
+double[] xhi = [4.1,4.2,1.0,2.0,1.0];
 H1F[][] h1_nProton = new H1F[Var.size()][TgtLabel.size()];
 
 TgtLabel.eachWithIndex {nTgt, iTgt->
