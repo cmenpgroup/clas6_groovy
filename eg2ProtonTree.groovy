@@ -12,15 +12,18 @@ import eg2Cuts.clas6beta
 import eg2Cuts.clas6EC
 import eg2Cuts.eg2Target
 import eg2Cuts.clas6Proton
+import eg2Cuts.clas6FidCuts
 
 clas6beta myBeta = new clas6beta();  // create the beta object
 clas6EC myEC = new clas6EC();  // create the EC object
 eg2Target myTarget = new eg2Target();  // create the eg2 target object
 clas6Proton myProton = new clas6Proton(); // create the proton object
+clas6FidCuts myFidCuts = new clas6FidCuts(); // create the CLAS6 Fiducial Cuts object
 
 double LIGHTSPEED = 30.0; // speed of light in cm/ns
 double W_DIS = 2.0;
 double Q2_DIS = 1.0;
+double YB_DIS = 0.85;
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
@@ -154,6 +157,7 @@ while(reader.hasNext()){
       boolean cutElectronMom = false;
       boolean cutQ2 = false;
       boolean cutW = false;
+      noolean cutYb = false;
       boolean cutCCnphe = false;
       boolean cutCCstat = false;
       boolean cutECstat = false;
@@ -161,6 +165,7 @@ while(reader.hasNext()){
       boolean cutECin = false;
       boolean cutECoverP = false;
       boolean cutdtECSC = false;
+      boolean cutFidCut = false;
 
       electron.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massElectron());
       v3electron.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
@@ -203,6 +208,7 @@ while(reader.hasNext()){
 
         Xb = posQ2/(2*nu*PhyConsts.massProton());
         Yb = nu/beamEnergy;
+        if(Yb<=YB_DIS) cutYb = true;
 
         if(cc_nphe>=NPHE_MIN) cutCCnphe = true;
         if(ecin >= ECIN_MIN) cutECin = true;
@@ -218,9 +224,10 @@ while(reader.hasNext()){
           }
         }
 
-        cutdtECSC = myEC.dt_ECSC(ecTime,scTime);
+        cutdtECSC = myEC.dt_ECSC(ecTime,scTime); // cut on time difference between EC and SC
+        cutFidCut = myFidCuts.clas6FidCheckCut(electron,"electron"); // electron fiducial cuts 
 
-        if(cutQ2 && cutW  && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
+        if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
           ElectronVecList << [electron.px(),electron.py(),electron.pz(),electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,vecW2.mass(),Xb,Yb,tofElectron];
         }
       }
@@ -261,12 +268,15 @@ while(reader.hasNext()){
       proton.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
       Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
-      ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr)];
 
-      switch(myTarget.Get_TargetIndex(v3proton_corr)){
-        case 1: counterProtonD2++; break;
-        case 2: counterProtonSolid++; break;
-        default: counterProtonOther++; break;
+      if(myFidCuts.clas6FidCheckCut(proton,"piplus")){ // proton fiducial cuts
+        ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr)];
+
+        switch(myTarget.Get_TargetIndex(v3proton_corr)){
+          case 1: counterProtonD2++; break;
+          case 2: counterProtonSolid++; break;
+          default: counterProtonOther++; break;
+        }
       }
     }
   }

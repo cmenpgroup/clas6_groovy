@@ -12,11 +12,13 @@ import eg2Cuts.clas6beta
 import eg2Cuts.clas6EC
 import eg2Cuts.eg2Target
 import eg2Cuts.clas6Proton
+import eg2Cuts.clas6FidCuts
 
 clas6beta myBeta = new clas6beta();  // create the beta object
 clas6EC myEC = new clas6EC();  // create the EC object
 eg2Target myTarget = new eg2Target();  // create the eg2 target object
 clas6Proton myProton = new clas6Proton(); // create the proton object
+clas6FidCuts myFidCuts = new clas6FidCuts(); // create the CLAS6 Fiducial Cuts object
 
 GStyle.getAxisAttributesX().setTitleFontSize(18);
 GStyle.getAxisAttributesY().setTitleFontSize(18);
@@ -175,6 +177,21 @@ h1_NumElectronPID.setTitle("Experiment: eg2");
 h1_NumElectronPID.setFillColor(GREEN);
 dir.addDataSet(h1_NumElectronPID);
 
+H2F h2_Theta_phi = new H2F("h2_Theta_phi","Experiment: eg2 - Electrons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi.setTitleX("#theta (deg.)");
+h2_Theta_phi.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi);
+
+H2F h2_Theta_phi_fidcut = new H2F("h2_Theta_phi_fidcut","Experiment: eg2 - Electrons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi_fidcut.setTitleX("#theta (deg.)");
+h2_Theta_phi_fidcut.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi_fidcut);
+
+H2F h2_Theta_phi_antifidcut = new H2F("h2_Theta_phi_antifidcut","Experiment: eg2 - Electrons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi_antifidcut.setTitleX("#theta (deg.)");
+h2_Theta_phi_antifidcut.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi_antifidcut);
+
 String dirProton = '/proton';
 dir.mkdir(dirProton);
 dir.cd(dirProton);
@@ -222,6 +239,21 @@ H2F h2_Vz_phi_prot_corr = new H2F("h2_Vz_phi_prot_corr","Experiment: eg2 - Proto
 h2_Vz_phi_prot_corr.setTitleX("Vertex z (cm)");
 h2_Vz_phi_prot_corr.setTitleY("#phi (deg.)");
 dir.addDataSet(h2_Vz_phi_prot_corr);
+
+H2F h2_Theta_phi_prot = new H2F("h2_Theta_phi_prot","Experiment: eg2 - Protons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi_prot.setTitleX("#theta (deg.)");
+h2_Theta_phi_prot.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi_prot);
+
+H2F h2_Theta_phi_prot_fidcut = new H2F("h2_Theta_phi_prot_fidcut","Experiment: eg2 - Protons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi_prot_fidcut.setTitleX("#theta (deg.)");
+h2_Theta_phi_prot_fidcut.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi_prot_fidcut);
+
+H2F h2_Theta_phi_prot_antifidcut = new H2F("h2_Theta_phi_prot_antifidcut","Experiment: eg2 - Protons",100,0.0,100.0,360,-180.0,180.0);
+h2_Theta_phi_prot_antifidcut.setTitleX("#theta (deg.)");
+h2_Theta_phi_prot_antifidcut.setTitleY("#phi (deg.)");
+dir.addDataSet(h2_Theta_phi_prot_antifidcut);
 
 double P_full_lo = 0.0;
 double P_full_hi = 3.0;
@@ -360,6 +392,7 @@ while(reader.hasNext()){
       boolean cutECin = false;
       boolean cutECoverP = false;
       boolean cutdtECSC = false;
+      boolean cutFidCut = false;
 
       // read in the momentum components
       px = bank.getFloat("px",val);
@@ -467,6 +500,15 @@ while(reader.hasNext()){
         cutdtECSC = myEC.dt_ECSC(ecTime,scTime);
         if(cutdtECSC) h1_dtECSC_cut.fill(ecTime-scTime);
 
+        // electron fiducial cuts
+        h2_Theta_phi.fill(Math.toDegrees(electron.theta()),Math.toDegrees(electron.phi()));
+        if(myFidCuts.clas6FidCheckCut(electron,"electron")){
+          cutFidCut = true;
+          h2_Theta_phi_fidcut.fill(Math.toDegrees(electron.theta()),Math.toDegrees(electron.phi()));
+        }else{
+          h2_Theta_phi_antifidcut.fill(Math.toDegrees(electron.theta()),Math.toDegrees(electron.phi()));
+        }
+
         // check all electron ID cuts
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
           ElectronVecList << [px,py,pz,electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,tofElectron];
@@ -503,6 +545,7 @@ while(reader.hasNext()){
   h1_NumProtonBank.fill(ProtonList.size());
   if(ProtonList.size()>=NUM_PROTONS){
     ProtonList.each { val ->
+      boolean cutFidCut_prot = false;
       beta = bank.getFloat("beta",val);
       proton.setPxPyPzM(bank.getFloat("px",val), bank.getFloat("py",val), bank.getFloat("pz",val), PhyConsts.massProton());
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
@@ -525,8 +568,18 @@ while(reader.hasNext()){
       if(myBeta.ProtonDBeta_Cut(beta - beta_proton)){
         h2_dBetaVsP_proton_cut.fill(proton.p(),beta - beta_proton);
       }
+
+      // proton fiducial cuts
+      h2_Theta_phi_prot.fill(Math.toDegrees(proton.theta()),Math.toDegrees(proton.phi()));
+      if(myFidCuts.clas6FidCheckCut(proton,"piplus")){
+        cutFidCut_prot = true;
+        h2_Theta_phi_prot_fidcut.fill(Math.toDegrees(proton.theta()),Math.toDegrees(proton.phi()));
+      }else{
+        h2_Theta_phi_prot_antifidcut.fill(Math.toDegrees(proton.theta()),Math.toDegrees(proton.phi()));
+      }
+
       // store the proton info that passed the ID cuts
-      ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr),tofProton];
+      if(cutFidCut_prot) ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr),tofProton];
     }
   }
   h1_NumProtonPID.fill(ProtonVecList.size());
@@ -577,9 +630,25 @@ while(reader.hasNext()){
 }
 System.out.println("processed (total) = " + counterFile);
 
-//TCanvas c1 = new TCanvas("c1",600,600);
-//c1.cd(0);
-//c1.draw(h1_Mpi0);
+int c1a_title_size = 24;
+TCanvas c1a = new TCanvas("c1a",1200,500);
+c1a.divide(3,1);
+c1a.cd(0);
+c1a.draw(h2_Theta_phi_prot);
+c1a.cd(1);
+c1a.draw(h2_Theta_phi_prot_fidcut);
+c1a.cd(2);
+c1a.draw(h2_Theta_phi_prot_antifidcut);
+
+int c1b_title_size = 24;
+TCanvas c1b = new TCanvas("c1b",1200,500);
+c1b.divide(3,1);
+c1b.cd(0);
+c1b.draw(h2_Theta_phi);
+c1b.cd(1);
+c1b.draw(h2_Theta_phi_fidcut);
+c1b.cd(2);
+c1b.draw(h2_Theta_phi_antifidcut);
 
 int c2_title_size = 22;
 TCanvas c2 = new TCanvas("c2",1400,900);
