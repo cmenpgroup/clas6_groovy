@@ -9,7 +9,9 @@ import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
 
 import eg2Cuts.clas6beta
+import eg2Cuts.eg2Target
 
+eg2Target myTarget = new eg2Target();  // create the eg2 target object
 myBeta = new clas6beta();  // create the beta object
 
 GStyle.getAxisAttributesX().setTitleFontSize(18);
@@ -18,9 +20,11 @@ GStyle.getAxisAttributesX().setLabelFontSize(18);
 GStyle.getAxisAttributesY().setLabelFontSize(18);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
-double LIGHTSPEED = 30.0; // speed of light in cm/ns
-double W_DIS = 2.0;
-double Q2_DIS = 1.0;
+double beamEnergy = myTarget.Get_Beam_Energy();
+println "Beam " + beamEnergy + " GeV";
+double W_DIS = myTarget.Get_W_DIS();
+double Q2_DIS = myTarget.Get_Q2_DIS();
+double YB_DIS = myTarget.Get_YB_DIS();
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
@@ -159,6 +163,8 @@ int counterFile;
 float px, py, pz;
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+System.out.println("Speed of light = " + LIGHTSPEED + " cm/ns");
 System.out.println("electron = " + PhyConsts.massElectron());
 System.out.println("proton = " + PhyConsts.massProton());
 System.out.println("pi+/- = " + PhyConsts.massPionCharged());

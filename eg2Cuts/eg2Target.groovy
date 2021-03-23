@@ -1,18 +1,40 @@
 package eg2Cuts
 
 import org.jlab.jnp.physics.*;
- 
+
 class eg2Target {
+
+  static double EBEAM = 5.014;
+  static double Q2_DIS = 1.0;
+  static double W_DIS = 2.0;
+  static double YB_DIS = 0.85;
+
+  double Get_Beam_Energy(){
+    return this.EBEAM;
+  }
+
+  double Get_Q2_DIS(){
+    return this.Q2_DIS;
+  }
+
+  double Get_W_DIS(){
+    return this.W_DIS;
+  }
+
+  double Get_YB_DIS(){
+    return this.YB_DIS;
+  }
+
   def Get_TargetIndex = {
     Vec3->
-      int ret = 0; // init the return variable
+      int ret = 2; // init the return variable to not D2 or solid targets
 
       if (Vec3.z() >= -32.0 &&  Vec3.z() < -28.0) {
-        ret = 1; // deuterium target
+        ret = 0; // deuterium target
       } else if (Vec3.z() >= -26.0 && Vec3.z() < -23.0) {
-        ret = 2; // nuclear target
+        ret = 1; // nuclear target
       } else {
-        ret = 0; // no target
+        ret = 2; // no target
       }
       return ret;
   }

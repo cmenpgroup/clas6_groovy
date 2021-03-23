@@ -18,9 +18,12 @@ GStyle.getAxisAttributesX().setLabelFontSize(18);
 GStyle.getAxisAttributesY().setLabelFontSize(18);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
-double LIGHTSPEED = 30.0; // speed of light in cm/ns
-double W_DIS = 2.0;
-double Q2_DIS = 1.0;
+import eg2Cuts.eg2Target
+eg2Target myTarget = new eg2Target();  // create the eg2 target object
+
+double W_DIS = myTarget.Get_W_DIS();
+double Q2_DIS = myTarget.Get_Q2_DIS();
+double YB_DIS = myTarget.Get_YB_DIS();
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
@@ -169,6 +172,8 @@ def PhotonVecList = [];
 def PhotonComponents = [];
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+System.out.println("Speed of light = " + LIGHTSPEED + " cm/ns");
 System.out.println("electron = " + PhyConsts.massElectron());
 System.out.println("proton = " + PhyConsts.massProton());
 System.out.println("pi+/- = " + PhyConsts.massPionCharged());
@@ -179,7 +184,9 @@ LorentzVector photon = new LorentzVector(0,0,0,0);
 LorentzVector piplus = new LorentzVector(0,0,0,0);
 LorentzVector piminus = new LorentzVector(0,0,0,0);
 
-double beamEnergy = 5.015;
+double beamEnergy = myTarget.Get_Beam_Energy();
+println "Beam " + beamEnergy + " GeV";
+
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 

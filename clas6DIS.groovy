@@ -1,15 +1,23 @@
 import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
+//import org.jlab.clas.physics.*;
+//import org.jlab.clas.pdg.PhysicsConstants;
 import org.jlab.jnp.physics.*;
 import org.jlab.jnp.pdg.PhysicsConstants;
 
-double W_DIS = 2.0;
-double Q2_DIS = 1.0;
+import eg2Cuts.eg2Target
+eg2Target myTarget = new eg2Target();  // create the eg2 target object
+
 int counterFile = 0;
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
 
-double beamEnergy = 5.1;
+double beamEnergy = myTarget.Get_Beam_Energy();
+println "Beam " + beamEnergy + " GeV";
+double W_DIS = myTarget.Get_W_DIS();
+double Q2_DIS = myTarget.Get_Q2_DIS();
+double YB_DIS = myTarget.Get_YB_DIS();
+
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 LorentzVector electron = new LorentzVector(0,0,0,0);

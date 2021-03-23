@@ -29,10 +29,6 @@ GStyle.getAxisAttributesZ().setLabelFontSize(18);
 int GREEN = 33;
 int BLUE = 34;
 int YELLOW = 35;
-double LIGHTSPEED = 30.0; // speed of light in cm/ns
-double W_DIS = 2.0;
-double Q2_DIS = 1.0;
-double YB_DIS = 0.85;
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
@@ -49,6 +45,8 @@ def ElectronVecList = [];
 def ProtonVecList = [];
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 LorentzVector electron = new LorentzVector(0,0,0,0);
 Vector3 v3electron = new Vector3(0,0,0);
@@ -56,7 +54,12 @@ LorentzVector proton = new LorentzVector(0,0,0,0);
 Vector3 v3proton = new Vector3(0,0,0);
 LorentzVector partLV = new LorentzVector(0,0,0,0);
 
-double beamEnergy = 5.1;
+double beamEnergy = myTarget.Get_Beam_Energy();
+println "Beam " + beamEnergy + " GeV";
+double W_DIS = myTarget.Get_W_DIS();
+double Q2_DIS = myTarget.Get_Q2_DIS();
+double YB_DIS = myTarget.Get_YB_DIS();
+
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 

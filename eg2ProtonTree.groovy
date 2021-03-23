@@ -20,15 +20,17 @@ eg2Target myTarget = new eg2Target();  // create the eg2 target object
 clas6Proton myProton = new clas6Proton(); // create the proton object
 clas6FidCuts myFidCuts = new clas6FidCuts(); // create the CLAS6 Fiducial Cuts object
 
-double LIGHTSPEED = 30.0; // speed of light in cm/ns
-double W_DIS = 2.0;
-double Q2_DIS = 1.0;
-double YB_DIS = 0.85;
 double ELECTRON_MOM = 0.64;
 double NPHE_MIN = 28;
 double ECIN_MIN = 0.06;
 int NUM_ELECTRONS = 1;
 int NUM_PROTONS = 1;
+
+double beamEnergy = myTarget.Get_Beam_Energy();
+println "Beam " + beamEnergy + " GeV";
+double W_DIS = myTarget.Get_W_DIS();
+double Q2_DIS = myTarget.Get_Q2_DIS();
+double YB_DIS = myTarget.Get_YB_DIS();
 
 int counterFile = 0;
 int counterProtonD2 = 0;
@@ -60,6 +62,8 @@ h1_dTOF_not2212.setTitleX("PID");
 h1_dTOF_not2212.setTitleY("Counts");
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 LorentzVector electron = new LorentzVector(0,0,0,0);
 Vector3 v3electron = new Vector3(0,0,0);
@@ -67,7 +71,6 @@ LorentzVector proton = new LorentzVector(0,0,0,0);
 Vector3 v3proton = new Vector3(0,0,0);
 LorentzVector partLV = new LorentzVector(0,0,0,0);
 
-double beamEnergy = 5.1;
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
 
@@ -157,7 +160,7 @@ while(reader.hasNext()){
       boolean cutElectronMom = false;
       boolean cutQ2 = false;
       boolean cutW = false;
-      noolean cutYb = false;
+      boolean cutYb = false;
       boolean cutCCnphe = false;
       boolean cutCCstat = false;
       boolean cutECstat = false;
@@ -225,7 +228,7 @@ while(reader.hasNext()){
         }
 
         cutdtECSC = myEC.dt_ECSC(ecTime,scTime); // cut on time difference between EC and SC
-        cutFidCut = myFidCuts.clas6FidCheckCut(electron,"electron"); // electron fiducial cuts 
+        cutFidCut = myFidCuts.clas6FidCheckCut(electron,"electron"); // electron fiducial cuts
 
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
           ElectronVecList << [electron.px(),electron.py(),electron.pz(),electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,vecW2.mass(),Xb,Yb,tofElectron];
@@ -273,8 +276,8 @@ while(reader.hasNext()){
         ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr)];
 
         switch(myTarget.Get_TargetIndex(v3proton_corr)){
-          case 1: counterProtonD2++; break;
-          case 2: counterProtonSolid++; break;
+          case 0: counterProtonD2++; break;
+          case 1: counterProtonSolid++; break;
           default: counterProtonOther++; break;
         }
       }

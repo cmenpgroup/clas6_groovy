@@ -15,7 +15,6 @@ GStyle.getAxisAttributesX().setLabelFontSize(24);
 GStyle.getAxisAttributesY().setLabelFontSize(24);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
-double LIGHTSPEED = 30.0; // speed of light in cm/ns
 double CUT_PROTON_P = 0.2; // cut on proton low momentum
 
 def cli = new CliBuilder(usage:'clas6ProtonTOF.groovy [options] infile1 infile2 ...')
@@ -50,6 +49,8 @@ reader.open();
 LorentzVector partLV = new LorentzVector(0,0,0,0);
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 double P_full_lo = 0.0;
 double P_full_hi = 3.0;
