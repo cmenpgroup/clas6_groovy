@@ -120,8 +120,8 @@ Bank       ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb
 Bank       scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
 // Define a ntuple tree with 5 variables
-TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:pNum:pIndex:pPx:pPy:pPz:q2:nu:W:zh:pT2:xb:yb");
-float[]  treeItem = new float[20];
+TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:eTheta:ePhi:pNum:pIndex:pPx:pPy:pPz:pTheta:pPhi:q2:nu:W:zh:zLC:pT2:xb:yb:pFidCut:eFidCut");
+float[]  treeItem = new float[27];
 
 // Loop over all events
 while(reader.hasNext()){
@@ -231,7 +231,7 @@ while(reader.hasNext()){
         cutFidCut = myFidCuts.clas6FidCheckCut(electron,"electron"); // electron fiducial cuts
 
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
-          ElectronVecList << [electron.px(),electron.py(),electron.pz(),electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,vecW2.mass(),Xb,Yb,tofElectron];
+          ElectronVecList << [electron.px(),electron.py(),electron.pz(),electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,vecW2.mass(),Xb,Yb,tofElectron,cutFidCut];
         }
       }
     }
@@ -272,9 +272,10 @@ while(reader.hasNext()){
       v3proton.setXYZ(bank.getFloat("vx",val), bank.getFloat("vy",val), bank.getFloat("vz",val));
       Vector3 v3proton_corr = myTarget.Get_CorrectedVertex(v3proton,proton);
 
-      if(myFidCuts.clas6FidCheckCut(proton,"piplus")){ // proton fiducial cuts
-        ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr)];
+      boolean protonFidCut = myFidCuts.clas6FidCheckCut(proton,"piplus");
+      ProtonVecList << [proton.px(),proton.py(),proton.pz(),proton.e(),myTarget.Get_TargetIndex(v3proton_corr),protonFidCut];
 
+      if(protonFidCut){ // proton fiducial cuts
         switch(myTarget.Get_TargetIndex(v3proton_corr)){
           case 0: counterProtonD2++; break;
           case 1: counterProtonSolid++; break;
@@ -287,15 +288,21 @@ while(reader.hasNext()){
   if(ElectronVecList.size()>=NUM_ELECTRONS && ProtonVecList.size()>=NUM_PROTONS){
     ElectronVecList.eachWithIndex { emList, emInd ->
       LorentzVector emVec = new LorentzVector(emList[0],emList[1],emList[2],emList[3]);
-      int emTgt =emList[4];
-      float emQsq = emList[5];
-      float emNu = emList[6];
-      float emW = emList[7];
-      float emXb = emList[8];
-      float emYb = emList[9];
+      int emTgt =emList[4];     // electron target label
+      float emQsq = emList[5];  // electron Q^2
+      float emNu = emList[6];   // electron nu
+      float emW = emList[7];    // electron W
+      float emXb = emList[8];   // electron x-Bjorken
+      float emYb = emList[9];   // electron Y (normalized nu)
+      int emFidCut = 0;         // initialized fiducial cut flag
+      if(emList[11]) emFidCut = 1;  // set fiducial cut flag if true
       ProtonVecList.eachWithIndex { pList, pInd ->
         LorentzVector protonVec = new LorentzVector(pList[0],pList[1],pList[2],pList[3]);
-        int pTgt = pList[4];
+        int pTgt = pList[4];       // proton target label
+        int pFidCut = 0;           // initialized fiducial cut flag
+        if(pList[5]) pFidCut = 1;  // set fiducial cut flag if true
+        // calculate the light-cone zh
+        double zLC = (protonVec.e() + protonVec.pz())/(PhyConsts.massProton() + 2*emNu);
         if(pTgt==emTgt){
           treeItem[0] = runNum;
           treeItem[1] = evtNum;
@@ -305,18 +312,25 @@ while(reader.hasNext()){
           treeItem[5] = emVec.px();
           treeItem[6] = emVec.py();
           treeItem[7] = emVec.pz();
-          treeItem[8] = ProtonVecList.size();
-          treeItem[9] = pInd;
-          treeItem[10] = protonVec.px();
-          treeItem[11] = protonVec.py();
-          treeItem[12] = protonVec.pz();
-          treeItem[13] = emQsq;
-          treeItem[14] = emNu;
-          treeItem[15] = emW;
-          treeItem[16] = protonVec.e()/emNu;
-          treeItem[17] = protonVec.pt()*protonVec.pt();
-          treeItem[18] = emXb;
-          treeItem[19] = emYb;
+          treeItem[8] = Math.toDegrees(emVec.theta());
+          treeItem[9] = Math.toDegrees(emVec.phi());
+          treeItem[10] = ProtonVecList.size();
+          treeItem[11] = pInd;
+          treeItem[12] = protonVec.px();
+          treeItem[13] = protonVec.py();
+          treeItem[14] = protonVec.pz();
+          treeItem[15] = Math.toDegrees(protonVec.theta());
+          treeItem[16] = Math.toDegrees(protonVec.phi());
+          treeItem[17] = emQsq;
+          treeItem[18] = emNu;
+          treeItem[19] = emW;
+          treeItem[20] = protonVec.e()/emNu;
+          treeItem[21] = zLC;
+          treeItem[22] = protonVec.pt()*protonVec.pt();
+          treeItem[23] = emXb;
+          treeItem[24] = emYb;
+          treeItem[25] = pFidCut;
+          treeItem[26] = emFidCut;
           tree.addRow(treeItem);  // add the tree data
         }
       }
