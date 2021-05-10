@@ -16,6 +16,7 @@ class YieldsForMR {
   List<Double> xhi = myHI.getXhi();
   List<Integer> nbins = myHI.getNbins();
 
+  int maxEvents = -1; //default is to analyze all events
   String VarList = "q2:nu:zh:pT2:zLC";
   String[] Cuts = ["pFidCut==1&&eFidCut==1&&iTgt==0","pFidCut==1&&eFidCut==1&&iTgt==1"];
 
@@ -27,7 +28,11 @@ class YieldsForMR {
     System.out.println(" ENTRIES = " + tree.getEntries());
   }
 
-  void createHistograms(int iTgt, int maxEvents){
+  void setMaxEvents(in nMax){
+    maxEvents = nMax;
+  }
+
+  void createHistograms(int iTgt){
     tree.reset();
     List vec = tree.getDataVectors(VarList,Cuts[iTgt],maxEvents);
     System.out.println("Vector Size (" + TgtLabel[iTgt] + ")= " + vec.get(0).getSize());
