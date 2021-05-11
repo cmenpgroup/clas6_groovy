@@ -82,7 +82,7 @@ String[] DirLabel = ["/LD2","/Solid","/multiplicity"];
 H1F[][] h1_nProton = new H1F[Var.size()][TgtLabel.size()];
 
 TgtLabel.eachWithIndex{nTgt,iTgt->
-  myMR.createHistograms(iTgt,maxEvents);
+  myMR.createHistograms(iTgt);
   dir.mkdir(DirLabel[iTgt]);
   dir.cd(DirLabel[iTgt]);
   Var.eachWithIndex { nVar, iVar->

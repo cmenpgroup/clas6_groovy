@@ -51,22 +51,22 @@ if(options.M) maxEvents = options.M;
 def outFile = "eg2Proton_AnaTree_MR_AllTgts_Hists.hipo";
 if(options.o) outFile = options.o;
 
-def inCarbon = "ntuple_C.hipo";
+def inCarbon = "ntuple_C_Npos.hipo";
 if(options.tC) inCarbon = options.tC;
 
-def inIron = "ntuple_Fe.hipo";
+def inIron = "ntuple_Fe_Npos.hipo";
 if(options.tFe) inIron = options.tFe;
 
-def inLead = "ntuple_Pb.hipo";
+def inLead = "ntuple_Pb_Npos.hipo";
 if(options.tPb) inLead = options.tPb;
 
-def inCarbonDIS = "ntupleDIS_C.hipo";
+def inCarbonDIS = "ntuple_C_DIS.hipo";
 if(options.dC) inCarbonDIS = options.dC;
 
-def inIronDIS = "ntupleDIS_Fe.hipo";
+def inIronDIS = "ntuple_Fe_DIS.hipo";
 if(options.dFe) inIronDIS = options.dFe;
 
-def inLeadDIS = "ntupleDIS_Pb.hipo";
+def inLeadDIS = "ntuple_Pb_DIS.hipo";
 if(options.dPb) inLeadDIS = options.dPb;
 
 def extraArguments = options.arguments()
@@ -128,9 +128,9 @@ int dirCount = 0; // counter for the histogram directory labels
 
 solidTgt.eachWithIndex{nSolid,iSolid->
   TgtLabel.eachWithIndex{nTgt,iTgt->
-    if(iSolid==0) myYldsC.createHistograms(iTgt,maxEvents);
-    if(iSolid==1) myYldsFe.createHistograms(iTgt,maxEvents);
-    if(iSolid==2) myYldsPb.createHistograms(iTgt,maxEvents);
+    if(iSolid==0) myYldsC.createHistograms(iTgt);
+    if(iSolid==1) myYldsFe.createHistograms(iTgt);
+    if(iSolid==2) myYldsPb.createHistograms(iTgt);
     dir.mkdir(DirLabel[dirCount]);
     dir.cd(DirLabel[dirCount]);
     dirCount++;
@@ -149,7 +149,7 @@ solidTgt.eachWithIndex{nSolid,iSolid->
     h1_mrTgt[iSolid][iVar].setName("h1_mr" + nSolid + "_" + nVar);
     h1_mrTgt[iSolid][iVar].setFillColor(GREEN);
 //    h1_mrTgt[iSolid][iVar].divide(1.0/normDIS[iSolid]);
-    h1_mrTgt[iSolid][iVar].divide(h1_ratDIS[iSolid][iVar]);    
+    h1_mrTgt[iSolid][iVar].divide(h1_ratDIS[iSolid][iVar]);
     gr_mrTgt[iSolid][iVar] = h1_mrTgt[iSolid][iVar].getGraph();
     gr_mrTgt[iSolid][iVar].setName("gr_mr" + nSolid + "_" + nVar);
     gr_mrTgt[iSolid][iVar].setTitle("eg2 - " + nSolid + "/D2");

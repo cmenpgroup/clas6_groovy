@@ -88,6 +88,7 @@ cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this num
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
 cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name')
 cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
+cli.g(longOpt:'graph', 'Graph monitoring histograms')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -105,9 +106,13 @@ if(options.s) solidTgt = options.s;
 String outFile = "eg2DISntuple.hipo";
 if(options.o) outFile = options.o;
 
+boolean bGraph = false;
+if(options.g) bGraph = true;
+
 println "Electron DIS cuts"
 println "Q^2 >= " + Q2_DIS + " GeV/c^2";
 println "W >= " + W_DIS + " GeV";
+println "Yb <= " + YB_DIS;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -130,9 +135,9 @@ Bank ccpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ccpb"));
 Bank ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb"));
 Bank scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
-// Define a ntuple tree with 5 variables
-TreeFileWriter tree = new TreeFileWriter(outFile,"DISTree","Run:Event:iTgt:eNum:ePx:ePy:ePz:q2:nu:W:xb:yb");
-float[]  treeItem = new float[12];
+// Define a ntuple tree with 16 variables
+TreeFileWriter tree = new TreeFileWriter(outFile,"DISTree","Run:Event:iTgt:eNum:ePx:ePy:ePz:eVx:eVy:eVz:q2:nu:W:xb:yb:eFidCut");
+float[]  treeItem = new float[16];
 
 while(reader.hasNext()) {
   if(counterFile % printCounter == 0) println counterFile;
@@ -220,6 +225,8 @@ while(reader.hasNext()) {
 
         // save the event if the particle pases the electron ID cuts
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
+          int emFidCut = 0;         // initialized fiducial cut flag
+          if(cutFidCut) emFidCut = 1;  // set fiducial cut flag if true
           int emTgt = myTarget.Get_TargetIndex(v3electron_corr);
           treeItem[0] = runNum;
           treeItem[1] = evtNum;
@@ -228,11 +235,15 @@ while(reader.hasNext()) {
           treeItem[4] = electron.px();
           treeItem[5] = electron.py();
           treeItem[6] = electron.pz();
-          treeItem[7] = posQ2;
-          treeItem[8] = nu;
-          treeItem[9] = vecW2.mass();
-          treeItem[10] = Xb;
-          treeItem[11] = Yb;
+          treeItem[7] = v3electron_corr.x();
+          treeItem[8] = v3electron_corr.y();
+          treeItem[9] = v3electron_corr.z();
+          treeItem[10] = posQ2;
+          treeItem[11] = nu;
+          treeItem[12] = vecW2.mass();
+          treeItem[13] = Xb;
+          treeItem[14] = Yb;
+          treeItem[15] = emFidCut;
           tree.addRow(treeItem);  // add the tree data
 
           h1_nElectron[0][emTgt].fill(posQ2);
@@ -280,97 +291,99 @@ System.out.println("Ne(D2)/Ne(Solid) = " + counterSolid/counterD2);
 
 tree.close(); // close the tree file
 
-TCanvas c1 = new TCanvas("c1",600,600);
-int c1_title_size = 24;
-c1.cd(0);
-TgtLabel.eachWithIndex {nTgt, iTgt->
-  c1.getPad().setTitleFontSize(c1_title_size);
-  if(nTgt!="Other"){
-    h1_Vz[iTgt].setFillColor(YELLOW);
-  }else{
-    h1_Vz[iTgt].setFillColor(BLUE);
-  }
-  if(iTgt==0){
-    c1.draw(h1_Vz[iTgt]);
-  }else{
-    c1.draw(h1_Vz[iTgt],"same");
-  }
-}
-
-TCanvas c2 = new TCanvas("c2",1200,500);
-int c2_title_size = 24;
-c2.divide(3,1);
-c2.cd(0);
-c2.getPad().setTitleFontSize(c2_title_size);
-c2.draw(h2_Q2_Nu_binned[0]);
-c2.cd(1);
-c2.getPad().setTitleFontSize(c2_title_size);
-c2.draw(h2_Q2_Nu_binned[1]);
-c2.cd(2);
-c2.getPad().setTitleFontSize(c2_title_size);
-H2F h2_Q2_Nu_binned_ratio = H2F.divide(h2_Q2_Nu_binned[1],h2_Q2_Nu_binned[0]);
-h2_Q2_Nu_binned_ratio.setTitle("eg2 - " + solidTgt + "/D2");
-h2_Q2_Nu_binned_ratio.setTitleX("Q^2 (GeV/c)^2");
-h2_Q2_Nu_binned_ratio.setTitleY("#nu (GeV)");
-c2.draw(h2_Q2_Nu_binned_ratio);
-
-for(iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
-  System.out.println("*** Q^2 " + Q2bins[iQsq] + " : " + Q2bins[iQsq+1] + " ***");
-  for(iNu = 0; iNu < Nubins.size()-1; iNu++){
-    System.out.println("<<< nu " + Nubins[iNu] + " : " + Nubins[iNu+1] + " >>>");
-    System.out.println(h2_Q2_Nu_binned[1].getBinContent(iQsq,iNu) + " / " + h2_Q2_Nu_binned[0].getBinContent(iQsq,iNu) + " = " + h2_Q2_Nu_binned_ratio.getBinContent(iQsq,iNu));
-  }
-}
-
-TCanvas c7 = new TCanvas("c7",1200,800);
-int canCount = 0;
-int c7_title_size = 24;
-c7.divide(Var.size(),3);
-TgtLabel.eachWithIndex {nTgt, iTgt->
-  if(nTgt!="Other"){
-    Var.eachWithIndex { nVar, iVar->
-      c7.cd(canCount);
-      c7.getPad().setTitleFontSize(c7_title_size);
-      c7.draw(h1_nElectron[iVar][iTgt]);
-      canCount++;
+if(bGraph){
+  TCanvas c1 = new TCanvas("c1",600,600);
+  int c1_title_size = 24;
+  c1.cd(0);
+  TgtLabel.eachWithIndex {nTgt, iTgt->
+    c1.getPad().setTitleFontSize(c1_title_size);
+    if(nTgt!="Other"){
+      h1_Vz[iTgt].setFillColor(YELLOW);
+    }else{
+      h1_Vz[iTgt].setFillColor(BLUE);
+    }
+    if(iTgt==0){
+      c1.draw(h1_Vz[iTgt]);
+    }else{
+      c1.draw(h1_Vz[iTgt],"same");
     }
   }
-}
 
-H1F[] h1_mrElectron = new H1F[Var.size()];
-GraphErrors[] gr_mrElectron = new GraphErrors[Var.size()];
-Var.eachWithIndex{nVar, iVar->
-  c7.cd(canCount+iVar);
-  c7.getPad().setTitleFontSize(c7_title_size);
-  h1_mrElectron[iVar] = H1F.divide(h1_nElectron[iVar][1],h1_nElectron[iVar][0]);
-  h1_mrElectron[iVar].setName("h1_mrElectron_" + nVar);
-  h1_mrElectron[iVar].setFillColor(GREEN);
-  gr_mrElectron[iVar] = h1_mrElectron[iVar].getGraph();
-  gr_mrElectron[iVar].setName("gr_mrElectron_" + nVar);
-  gr_mrElectron[iVar].setTitle("eg2 - " + solidTgt + "/D2");
-  gr_mrElectron[iVar].setTitleX(xLabel[iVar]);
-  gr_mrElectron[iVar].setTitleY("R^p");
-  gr_mrElectron[iVar].setMarkerColor(3);
-  gr_mrElectron[iVar].setLineColor(3);
-  gr_mrElectron[iVar].setMarkerSize(3);
-  c7.draw(gr_mrElectron[iVar]);
-}
-//c7.save("mrElectron.png");
+  TCanvas c2 = new TCanvas("c2",1200,500);
+  int c2_title_size = 24;
+  c2.divide(3,1);
+  c2.cd(0);
+  c2.getPad().setTitleFontSize(c2_title_size);
+  c2.draw(h2_Q2_Nu_binned[0]);
+  c2.cd(1);
+  c2.getPad().setTitleFontSize(c2_title_size);
+  c2.draw(h2_Q2_Nu_binned[1]);
+  c2.cd(2);
+  c2.getPad().setTitleFontSize(c2_title_size);
+  H2F h2_Q2_Nu_binned_ratio = H2F.divide(h2_Q2_Nu_binned[1],h2_Q2_Nu_binned[0]);
+  h2_Q2_Nu_binned_ratio.setTitle("eg2 - " + solidTgt + "/D2");
+  h2_Q2_Nu_binned_ratio.setTitleX("Q^2 (GeV/c)^2");
+  h2_Q2_Nu_binned_ratio.setTitleY("#nu (GeV)");
+  c2.draw(h2_Q2_Nu_binned_ratio);
 
-TCanvas[] cMR = new TCanvas[Var.size()];
-int cMR_title_size = 24;
-Var.eachWithIndex { nVar, iVar->
-  canCount = 0;
-  def cName = "can_" + nVar;
-  cMR[iVar] = new TCanvas(cName,1000,500);
-  cMR[iVar].divide(3,1);
-  TgtLabel.eachWithIndex {nTgt, iTgt->
-    cMR[iVar].cd(canCount);
-    cMR[iVar].getPad().setTitleFontSize(cMR_title_size);
-    if(nTgt!="Other") {cMR[iVar].draw(h1_nElectron[iVar][iTgt]); canCount++;}
+  for(iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
+    System.out.println("*** Q^2 " + Q2bins[iQsq] + " : " + Q2bins[iQsq+1] + " ***");
+    for(iNu = 0; iNu < Nubins.size()-1; iNu++){
+      System.out.println("<<< nu " + Nubins[iNu] + " : " + Nubins[iNu+1] + " >>>");
+      System.out.println(h2_Q2_Nu_binned[1].getBinContent(iQsq,iNu) + " / " + h2_Q2_Nu_binned[0].getBinContent(iQsq,iNu) + " = " + h2_Q2_Nu_binned_ratio.getBinContent(iQsq,iNu));
+    }
   }
-  cMR[iVar].cd(canCount);
-  cMR[iVar].draw(gr_mrElectron[iVar]);
-  def cFile = "mrElectron_" + nVar + ".png";
-  cMR[iVar].save(cFile);
+
+  TCanvas c7 = new TCanvas("c7",1200,800);
+  int canCount = 0;
+  int c7_title_size = 24;
+  c7.divide(Var.size(),3);
+  TgtLabel.eachWithIndex {nTgt, iTgt->
+    if(nTgt!="Other"){
+      Var.eachWithIndex { nVar, iVar->
+        c7.cd(canCount);
+        c7.getPad().setTitleFontSize(c7_title_size);
+        c7.draw(h1_nElectron[iVar][iTgt]);
+        canCount++;
+      }
+    }
+  }
+
+  H1F[] h1_mrElectron = new H1F[Var.size()];
+  GraphErrors[] gr_mrElectron = new GraphErrors[Var.size()];
+  Var.eachWithIndex{nVar, iVar->
+    c7.cd(canCount+iVar);
+    c7.getPad().setTitleFontSize(c7_title_size);
+    h1_mrElectron[iVar] = H1F.divide(h1_nElectron[iVar][1],h1_nElectron[iVar][0]);
+    h1_mrElectron[iVar].setName("h1_mrElectron_" + nVar);
+    h1_mrElectron[iVar].setFillColor(GREEN);
+    gr_mrElectron[iVar] = h1_mrElectron[iVar].getGraph();
+    gr_mrElectron[iVar].setName("gr_mrElectron_" + nVar);
+    gr_mrElectron[iVar].setTitle("eg2 - " + solidTgt + "/D2");
+    gr_mrElectron[iVar].setTitleX(xLabel[iVar]);
+    gr_mrElectron[iVar].setTitleY("R^p");
+    gr_mrElectron[iVar].setMarkerColor(3);
+    gr_mrElectron[iVar].setLineColor(3);
+    gr_mrElectron[iVar].setMarkerSize(3);
+    c7.draw(gr_mrElectron[iVar]);
+  }
+  //c7.save("mrElectron.png");
+
+  TCanvas[] cMR = new TCanvas[Var.size()];
+  int cMR_title_size = 24;
+  Var.eachWithIndex { nVar, iVar->
+    canCount = 0;
+    def cName = "can_" + nVar;
+    cMR[iVar] = new TCanvas(cName,1000,500);
+    cMR[iVar].divide(3,1);
+    TgtLabel.eachWithIndex {nTgt, iTgt->
+      cMR[iVar].cd(canCount);
+      cMR[iVar].getPad().setTitleFontSize(cMR_title_size);
+      if(nTgt!="Other") {cMR[iVar].draw(h1_nElectron[iVar][iTgt]); canCount++;}
+    }
+    cMR[iVar].cd(canCount);
+    cMR[iVar].draw(gr_mrElectron[iVar]);
+    def cFile = "mrElectron_" + nVar + ".png";
+    cMR[iVar].save(cFile);
+  }
 }
