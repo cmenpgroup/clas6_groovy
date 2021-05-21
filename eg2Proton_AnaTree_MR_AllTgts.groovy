@@ -7,6 +7,8 @@ import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
 import org.jlab.groot.tree.*; // new import for ntuples
+//import org.jlab.jnp.groot.graphics.*;
+//import org.jlab.jnp.groot.graphics.LegendNode2D.*;
 
 import eg2AnaTree.*;
 import eg2Cuts.eg2Target;
@@ -96,9 +98,9 @@ TDirectory dir = new TDirectory();
 //**********************
 // Analyzing DIS data
 //**********************
-YieldsForDIS myDISC = new YieldsForDIS(inCarbonDIS);
-YieldsForDIS myDISFe = new YieldsForDIS(inIronDIS);
-YieldsForDIS myDISPb = new YieldsForDIS(inLeadDIS);
+YieldsForDIS myDISC = new YieldsForDIS(inCarbonDIS); myDISC.setMaxEvents(maxEvents);
+YieldsForDIS myDISFe = new YieldsForDIS(inIronDIS); myDISFe.setMaxEvents(maxEvents);
+YieldsForDIS myDISPb = new YieldsForDIS(inLeadDIS); myDISPb.setMaxEvents(maxEvents);
 H1F[][] h1_ratDIS = new H1F[solidTgt.size()][Var.size()];
 
 solidTgt.eachWithIndex{nSolid,iSolid->
@@ -115,12 +117,17 @@ solidTgt.eachWithIndex{nSolid,iSolid->
   }
 }
 
+myDISC = null;
+myDISFe = null;
+myDISPb = null;
+System.gc();
+
 //**********************
 // Analyzing Target data
 //**********************
-YieldsForMR myYldsC = new YieldsForMR(inCarbon);
-YieldsForMR myYldsFe = new YieldsForMR(inIron);
-YieldsForMR myYldsPb = new YieldsForMR(inLead);
+YieldsForMR myYldsC = new YieldsForMR(inCarbon); myYldsC.setMaxEvents(maxEvents);
+YieldsForMR myYldsFe = new YieldsForMR(inIron); myYldsFe.setMaxEvents(maxEvents);
+YieldsForMR myYldsPb = new YieldsForMR(inLead); myYldsPb.setMaxEvents(maxEvents);
 H1F[][][] h1_Ylds = new H1F[solidTgt.size()][Var.size()][TgtLabel.size()];
 H1F[][] h1_mrTgt = new H1F[solidTgt.size()][Var.size()];
 GraphErrors[][] gr_mrTgt = new GraphErrors[solidTgt.size()][Var.size()];
@@ -148,13 +155,17 @@ solidTgt.eachWithIndex{nSolid,iSolid->
     h1_mrTgt[iSolid][iVar] = H1F.divide(h1_Ylds[iSolid][iVar][1],h1_Ylds[iSolid][iVar][0]);
     h1_mrTgt[iSolid][iVar].setName("h1_mr" + nSolid + "_" + nVar);
     h1_mrTgt[iSolid][iVar].setFillColor(GREEN);
-//    h1_mrTgt[iSolid][iVar].divide(1.0/normDIS[iSolid]);
-    h1_mrTgt[iSolid][iVar].divide(h1_ratDIS[iSolid][iVar]);
+    if(nVar=="q2" || nVar=="nu"){
+      h1_mrTgt[iSolid][iVar].divide(h1_ratDIS[iSolid][iVar]);
+    }else{
+      h1_mrTgt[iSolid][iVar].divide(1.0/normDIS[iSolid]);
+    }
     gr_mrTgt[iSolid][iVar] = h1_mrTgt[iSolid][iVar].getGraph();
     gr_mrTgt[iSolid][iVar].setName("gr_mr" + nSolid + "_" + nVar);
     gr_mrTgt[iSolid][iVar].setTitle("eg2 - " + nSolid + "/D2");
     gr_mrTgt[iSolid][iVar].setTitleX(xLabel[iVar]);
     gr_mrTgt[iSolid][iVar].setTitleY("R^p");
+    gr_mrTgt[iSolid][iVar].setMarkerStyle(iSolid);
     gr_mrTgt[iSolid][iVar].setMarkerColor(iSolid+1);
     gr_mrTgt[iSolid][iVar].setLineColor(iSolid+1);
     gr_mrTgt[iSolid][iVar].setMarkerSize(3);
@@ -162,27 +173,40 @@ solidTgt.eachWithIndex{nSolid,iSolid->
   }
 }
 
+GraphErrors[] grGiBUU_zh = new GraphErrors[solidTgt.size()];
+
 TCanvas[] can = new TCanvas[Var.size()];
 int c_title_size = 24;
 
+//LegendNode2D[] legend = new LegendNode2D[Var.size()];
 Var.eachWithIndex{nVar, iVar->
-  String canName = "c" + iVar;
+  String canName = "c_" + nVar;
   can[iVar] = new TCanvas(canName,600,600);
   can[iVar].cd(0);
   can[iVar].getPad().setTitleFontSize(c_title_size);
+//  legend[iVar] = new LegendNode2D(60,25,LegendStyle.ONELINE);
   solidTgt.eachWithIndex{nSolid,iSolid->
     if(iSolid==0){
       can[iVar].draw(gr_mrTgt[iSolid][iVar]);
     }else{
       can[iVar].draw(gr_mrTgt[iSolid][iVar],"same");
     }
+//    legend[iVar].add(gr_mrTgt[iSolid][iVar],nSolid);
+    if(nVar=="zh"){
+      String grName = "grGiBUU_zh_" + nSolid;
+      println "Plotting " + grName;
+      grGiBUU_zh[iSolid] = new GraphErrors(grName);
+      String inFileGiBUU = "../eg2_proton_theory/eg2Proton-GiBUU-MR-zh-" + nSolid + ".txt";
+      grGiBUU_zh[iSolid].readFile(inFileGiBUU);
+//      grGiBUU_zh[iSolid].setMarkerStyle(iSolid+4);
+      grGiBUU_zh[iSolid].setMarkerSize(0);
+      grGiBUU_zh[iSolid].setLineColor(iSolid+1);
+      can[iVar].draw(grGiBUU_zh[iSolid],"sameL");
+      legend[iVar].add(grGiBUU_zh[iSolid],nSolid);
+    }
   }
+//  can[iVar].getDataCanvas().getRegion(0).addNode(legend[iVar]);
 }
-
-TCanvas c1 = new TCanvas("c1",600,600);
-c1.cd(0);
-c1.getPad().setTitleFontSize(c_title_size);
-c1.draw(cdis);
 
 dir.writeFile(outFile); // write the histograms to the file
 
