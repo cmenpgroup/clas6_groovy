@@ -1,5 +1,7 @@
 package eg2Cuts
 
+import org.jlab.jnp.physics.*;
+
 class clas6EC {
 
   def dt_ECSC = {
@@ -89,5 +91,72 @@ class clas6EC {
       ret = (diff < Nsigma*sigma) ? true : false;
 
       return ret;
+  }
+
+  Vector3 XYZtoUVW(Vector3 xyz){
+    double u=0.0;
+    double v=0.0;
+    double w=0.0;
+    double xi=0.0;
+    double yi=0.0;
+    double zi=0.0;
+    double ec_phi = 0.0;
+    double phi = 0.0;
+
+    // Parameters
+    double ec_theta = 0.4363323;
+    double ylow = -182.974;
+    double yhi = 189.956;
+    double tgrho = 1.95325;
+    double sinrho = 0.8901256;
+    double cosrho = 0.455715;
+
+    phi = Math.toDegrees(Math.atan2(xyz.y(),xyz.x()));
+    if(phi<0.0){phi = phi + 360.0;}
+    phi = phi+30.0;
+    if(phi>360.0){phi = phi-360.0;}
+
+    ec_phi = ((int)(phi/60.0))*1.0471975;
+
+    Vector3 RotColumnY = new Vector3(Math.cos(ec_theta)*Math.cos(ec_phi),Math.cos(ec_theta)*Math.sin(ec_phi),-Math.sin(ec_theta));
+    Vector3 RotColumnX = new Vector3(-Math.sin(ec_phi),Math.cos(ec_phi),0.0);
+    Vector3 RotColumnZ = new Vector3(Math.sin(ec_theta)*Math.cos(ec_phi),Math.sin(ec_theta)*Math.sin(ec_phi),Math.cos(ec_theta));
+
+    yi = xyz.dot(RotColumnY);
+    xi = xyz.dot(RotColumnX);
+    zi = xyz.dot(RotColumnZ) - 510.32;
+
+    u = (yi-ylow)/sinrho;
+    v = (yhi-ylow)/tgrho - xi + (yhi-yi)/tgrho;
+    w = ((yhi-ylow)/tgrho + xi + (yhi-yi)/tgrho)/2.0/cosrho;
+
+    Vector3 uvw = new Vector3(u,v,w);
+
+    return uvw;
+  }
+
+  boolean FidCutU(double u){
+    double ecU_lo = 40.0;
+    double ecU_hi = 410.0;
+    boolean ret = (u>ecU_lo && u<ecU_hi) ? true : false;
+    return ret;
+  }
+  boolean FidCutV(double v){
+    double ecV_lo = 0.0;
+    double ecV_hi = 370.0;
+    boolean ret = (v>=ecV_lo && v<ecV_hi) ? true : false;
+    return ret;
+  }
+  boolean FidCutW(double w){
+    double ecW_lo = 0.0;
+    double ecW_hi = 405.0;
+    boolean ret = (w>=ecW_lo && w<ecW_hi) ? true : false;
+    return ret;
+  }
+  boolean FidCutUVW(Vector3 uvw){
+    return (this.FidCutU(uvw.x()) && this.FidCutV(uvw.y()) && this.FidCutW(uvw.z()));
+  }
+  boolean FidCutXYZ(Vector3 xyz){
+    return this.FidCutUVW(this.XYZtoUVW(xyz));
   }
 }

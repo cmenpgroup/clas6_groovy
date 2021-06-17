@@ -13,12 +13,14 @@ import eg2Cuts.clas6EC
 import eg2Cuts.eg2Target
 import eg2Cuts.clas6Proton
 import eg2Cuts.clas6FidCuts
+import kinematics.ReactionKine
 
 clas6beta myBeta = new clas6beta();  // create the beta object
 clas6EC myEC = new clas6EC();  // create the EC object
 eg2Target myTarget = new eg2Target();  // create the eg2 target object
 clas6Proton myProton = new clas6Proton(); // create the proton object
 clas6FidCuts myFidCuts = new clas6FidCuts(); // create the CLAS6 Fiducial Cuts object
+ReactionKine myRK = new ReactionKine(); // create object for reaction kinematics
 
 GStyle.getAxisAttributesX().setTitleFontSize(18);
 GStyle.getAxisAttributesY().setTitleFontSize(18);
@@ -62,6 +64,9 @@ double YB_DIS = myTarget.Get_YB_DIS();
 
 LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
 LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
+
+myRK.setBeam(beamEnergy,0.0);
+myRK.setTarget(PhyConsts.massProton());
 
 def dirname = "/electron";
 TDirectory dir = new TDirectory();
@@ -275,9 +280,9 @@ dir.addDataSet(h2_dTOF_VS_P_cut);
 String[] TgtLabel = ["D2","Nuc","Other"];
 String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z_L_C"];
 String[] Var = ["Qsq","nu","zh","pT2","zLC"];
-int[] nbins = [50,50,30,30,30];
+int[] nbins = [50,50,50,30,50];
 double[] xlo = [Q2_DIS,2.2,0.0,0.0,0.0];
-double[] xhi = [4.1,4.2,1.0,2.0,1.0];
+double[] xhi = [4.1,4.2,1.25,2.0,1.25];
 H1F[][] h1_nProton = new H1F[Var.size()][TgtLabel.size()];
 
 TgtLabel.eachWithIndex {nTgt, iTgt->
@@ -434,9 +439,9 @@ while(reader.hasNext()){
           cutElectronMom = true;
           h1_ElectronP_cut.fill(electron.p());
         }
-        LorentzVector vecQ2 = LorentzVector.from(beam);   // calculate Q-squared, first copy incident e- 4-vector
-        vecQ2.sub(electron);  // calculate Q-squared, subtract scattered e- 4-vector
-        posQ2 = -vecQ2.mass2(); // calcuate Q-squared, make into a positive value
+
+        myRK.setScatteredElectron(electron);
+        posQ2 = myRK.Q2(); // calcuate Q-squared, make into a positive value
         h1_Q2.fill(posQ2);
 
         if(posQ2>=Q2_DIS){  // check Q-squared cut
@@ -444,29 +449,26 @@ while(reader.hasNext()){
           h1_Q2_cut.fill(posQ2);
         }
 
-        LorentzVector vecW2 = LorentzVector.from(beam); // calculate W, first copy incident e- 4-vector
-        vecW2.add(protonTarget).sub(electron); // calculate W, add target proton 4-vector and subtract scattered e- 4-vector
-        h1_W.fill(vecW2.mass());
-        if(vecW2.mass()>=W_DIS){ // check W cut
+        h1_W.fill(myRK.W());
+        if(myRK.W()>=W_DIS){ // check W cut
           cutW = true;
-          h1_W_cut.fill(vecW2.mass());
+          h1_W_cut.fill(myRK.W());
         }
 
-        h2_Q2_vs_W.fill(posQ2,vecW2.mass());
-        if(cutQ2 && cutW) h2_Q2_vs_W_cut.fill(posQ2,vecW2.mass());
+        h2_Q2_vs_W.fill(posQ2,myRK.W());
+        if(cutQ2 && cutW) h2_Q2_vs_W_cut.fill(posQ2,myRK.W());
 
-        nu = beamEnergy - electron.e(); // calculate nu
-        h1_Nu.fill(nu);
+        h1_Nu.fill(myRK.nu());
+        h1_Xb.fill(myRK.Xb());
 
-        Xb = posQ2/(2*nu*PhyConsts.massProton()); // calcuate x-byorken
-        h1_Xb.fill(Xb);
-
-        Yb = nu/beamEnergy; // calculate normalized nu
+        Yb = myRK.Yb() // calculate normalized nu
         h1_Yb.fill(Yb);
         if(Yb<=YB_DIS){  // check Yb cut
           cutYb = true;
           h1_Yb_cut.fill(Yb);
         }
+
+//        println "Check " + myRK.Q2() + " " + myRK.W() + " " + myRK.nu() + " " + myRK.Xb() + " " + myRK.Yb();
 
         h1_cc_nphe.fill(cc_nphe);
         if(cc_nphe>=NPHE_MIN){ // check CC nphe cut
@@ -514,7 +516,7 @@ while(reader.hasNext()){
 
         // check all electron ID cuts
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
-          ElectronVecList << [px,py,pz,electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,nu,tofElectron];
+          ElectronVecList << [px,py,pz,electron.e(),myTarget.Get_TargetIndex(v3electron_corr),posQ2,myRK.nu(),tofElectron];
         }
       }
     }
@@ -595,14 +597,15 @@ while(reader.hasNext()){
       float emNu = emList[6];
       ProtonVecList.each { pList ->
         LorentzVector protonVec = new LorentzVector(pList[0],pList[1],pList[2],pList[3]);
+        myRK.setScatteredElectron(emVec);
+        myRK.setHadron(protonVec);
         int pTgt = pList[4];
         if(pTgt==emTgt){
           h1_nProton[0][pTgt].fill(emQsq);
           h1_nProton[1][pTgt].fill(emNu);
-          h1_nProton[2][pTgt].fill(protonVec.e()/emNu); // zh - fractional quark energy
-          h1_nProton[3][pTgt].fill(protonVec.pt()*protonVec.pt());
-          zLC = (protonVec.e() + protonVec.pz())/(PhyConsts.massProton() + 2*emNu);
-          h1_nProton[4][pTgt].fill(zLC); // zLC - lightcone fractional quark energy
+          h1_nProton[2][pTgt].fill(myRK.zh()); // zh - fractional quark energy
+          h1_nProton[3][pTgt].fill(myRK.pT2());
+          h1_nProton[4][pTgt].fill(myRK.zLC()); // zLC - lightcone fractional quark energy
 
           boolean foundQsq = false;
           for(int iQsq = 0; iQsq < Q2bins.size()-1; iQsq++){
@@ -622,8 +625,8 @@ while(reader.hasNext()){
             }
           }
           if(foundQsq && foundNu){
-            h1_zh[indexQsq][indexNu][pTgt].fill(protonVec.e()/emNu);
-            h1_zLC[indexQsq][indexNu][pTgt].fill(zLC);
+            h1_zh[indexQsq][indexNu][pTgt].fill(myRK.zh());
+            h1_zLC[indexQsq][indexNu][pTgt].fill(myRK.zLC());
           }
         }
       }
