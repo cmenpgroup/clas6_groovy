@@ -28,7 +28,7 @@ class YieldsForMR {
     System.out.println(" ENTRIES = " + tree.getEntries());
   }
 
-  void setMaxEvents(in nMax){
+  void setMaxEvents(int nMax){
     maxEvents = nMax;
   }
 
@@ -44,6 +44,7 @@ class YieldsForMR {
       hYlds[iVar].setTitleY("Counts");
       hYlds[iVar].setTitle("eg2 - " + TgtLabel[iTgt]);
     }
+    vec = null;
   }
 
   H1F getHistogram(int num){

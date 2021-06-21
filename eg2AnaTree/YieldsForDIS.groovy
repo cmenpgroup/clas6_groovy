@@ -18,7 +18,7 @@ class YieldsForDIS {
 
   int maxEvents = -1; //default is to analyze all events
   String VarList = "q2:nu";
-  String[] Cuts = ["iTgt==0","iTgt==1"];
+  String[] Cuts = ["eFidCut==1&&iTgt==0","eFidCut==1&&iTgt==1"];
 
   double[] normDIS = [1.11978 ,  1.0609 ,  2.19708]; // DIS e- normalization factors (Acc Corr, Rad Corr and Coulomb)
 
@@ -30,7 +30,7 @@ class YieldsForDIS {
     System.out.println(" ENTRIES = " + tree.getEntries());
   }
 
-  void setMaxEvents(in nMax){
+  void setMaxEvents(int nMax){
     maxEvents = nMax;
   }
 
@@ -42,7 +42,7 @@ class YieldsForDIS {
         H1F hYldsQ2_Solid = createYieldsQ2(1);
         hRatDIS[iVar] = H1F.divide(hYldsQ2_Solid,hYldsQ2_LD2);
         hRatDIS[iVar].setName(hname);
-      }elseif(nVar=="nu"){
+      }else if(nVar=="nu"){
         H1F hYldsNu_LD2 = createYieldsNu(0);
         H1F hYldsNu_Solid = createYieldsNu(1);
         hRatDIS[iVar] = H1F.divide(hYldsNu_Solid,hYldsNu_LD2);
@@ -63,6 +63,7 @@ class YieldsForDIS {
     tree.reset();
     List vec = tree.getDataVectors("q2",Cuts[iTgt],maxEvents);
     H1F hist = new H1F().create("hist",nbins[0],vec.get(0),xlo[0],xhi[0]);
+    vec = null;
     return hist;
   }
 
@@ -70,6 +71,7 @@ class YieldsForDIS {
     tree.reset();
     List vec = tree.getDataVectors("nu",Cuts[iTgt],maxEvents);
     H1F hist = new H1F().create("hist",nbins[1],vec.get(0),xlo[1],xhi[1]);
+    vec = null;
     return hist;
   }
 
