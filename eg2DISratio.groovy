@@ -15,12 +15,14 @@ import eg2Cuts.clas6EC
 import eg2Cuts.eg2Target
 import eg2Cuts.clas6Proton
 import eg2Cuts.clas6FidCuts
+import kinematics.ReactionKine
 
 clas6beta myBeta = new clas6beta();  // create the beta object
 clas6EC myEC = new clas6EC();  // create the EC object
 eg2Target myTarget = new eg2Target();  // create the eg2 target object
 clas6Proton myProton = new clas6Proton(); // create the proton object
 clas6FidCuts myFidCuts = new clas6FidCuts(); // create the CLAS6 Fiducial Cuts object
+ReactionKine myRK = new ReactionKine(); // create object for reaction kinematics
 
 int GREEN = 33;
 int BLUE = 34;
@@ -44,11 +46,15 @@ double W_DIS = myTarget.Get_W_DIS();
 double Q2_DIS = myTarget.Get_Q2_DIS();
 double YB_DIS = myTarget.Get_YB_DIS();
 
-LorentzVector beam = new LorentzVector(0.0,0.0,beamEnergy,beamEnergy);
-LorentzVector protonTarget = new LorentzVector(0.0,0.0,0.0,PhyConsts.massProton());
+myRK.setBeam(beamEnergy,PhyConsts.massElectron());
+myRK.setTarget(PhyConsts.massProton());
+
 LorentzVector electron = new LorentzVector(0,0,0,0);
 Vector3 v3electron = new Vector3(0,0,0);
 Vector3 v3electron_corr = new Vector3(0,0,0);
+
+Vector3 ecXYZ = new Vector3(0.0,0.0,0.0);
+Vector3 ecUVW = new Vector3(0.0,0.0,0.0);
 
 String[] TgtLabel = ["D2","Nuc","Other"];
 String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)"];
@@ -81,6 +87,45 @@ TgtLabel.eachWithIndex {nTgt, iTgt->
   h1_Vz[iTgt].setTitleX("Vertex z (cm)");
   h1_Vz[iTgt].setTitleY("Counts");
 }
+
+int nECx = 450;
+double ECxLo = -450.0;
+double ECxHi = 450.0;
+int nECy = 450;
+double ECyLo = -450.0;
+double ECyHi = 450.0;
+String[] histsECxy = ["h2_EC_XvsY","h2_EC_XvsY_antiFid","h2_EC_XvsY_Fid"];
+H2F[] h2_EC_XvsY = new H2F[histsECxy.size()];
+
+histsECxy.eachWithIndex { hname, ih->
+  h2_EC_XvsY[ih] = new H2F(hname,"EC x vs y",nECx,ECxLo,ECxHi,nECy,ECyLo,ECyHi);
+  h2_EC_XvsY[ih].setTitleX("x (cm)");
+  h2_EC_XvsY[ih].setTitleY("y (cm)");
+}
+
+int nECstrips = 225;
+double ECstripLo = 0.0;
+double ECstripHi = 450.0;
+H1F h1_EC_U = new H1F("h1_EC_U","U (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_U.setTitle("EC Hit Position");
+
+H1F h1_EC_V = new H1F("h1_EC_V","V (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_V.setTitle("EC Hit Position");
+
+H1F h1_EC_W = new H1F("h1_EC_W","W (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_W.setTitle("EC Hit Position");
+
+H1F h1_EC_U_fid = new H1F("h1_EC_U_fid","U (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_U_fid.setTitle("EC Hit Position");
+h1_EC_U_fid.setFillColor(GREEN);
+
+H1F h1_EC_V_fid = new H1F("h1_EC_V_fid","V (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_V_fid.setTitle("EC Hit Position");
+h1_EC_V_fid.setFillColor(GREEN);
+
+H1F h1_EC_W_fid = new H1F("h1_EC_W_fid","W (cm)","Counts",nECstrips,ECstripLo,ECstripHi);
+h1_EC_W_fid.setTitle("EC Hit Position");
+h1_EC_W_fid.setFillColor(GREEN);
 
 def cli = new CliBuilder(usage:'eg2DISratio.groovy [options] infile1 infile2 ...')
 cli.h(longOpt:'help', 'Print this message.')
@@ -136,8 +181,8 @@ Bank ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb"));
 Bank scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
 // Define a ntuple tree with 16 variables
-TreeFileWriter tree = new TreeFileWriter(outFile,"DISTree","Run:Event:iTgt:eNum:ePx:ePy:ePz:eVx:eVy:eVz:q2:nu:W:xb:yb:eFidCut");
-float[]  treeItem = new float[16];
+TreeFileWriter tree = new TreeFileWriter(outFile,"DISTree","Run:Event:iTgt:eNum:ePx:ePy:ePz:eVx:eVy:eVz:q2:nu:W:xb:yb:eFidCut:eFidEC");
+float[]  treeItem = new float[17];
 
 while(reader.hasNext()) {
   if(counterFile % printCounter == 0) println counterFile;
@@ -169,6 +214,7 @@ while(reader.hasNext()) {
       boolean cutECoverP = false;
       boolean cutdtECSC = false;
       boolean cutFidCut = false;
+      boolean cutECfid = false;
 
       // create electron 4-vector
       electron.setPxPyPzM(bank.getFloat("px",i), bank.getFloat("py",i), bank.getFloat("pz",i), PhyConsts.massElectron());
@@ -186,6 +232,24 @@ while(reader.hasNext()) {
         ecout = ecpb.getFloat("eout",bank.getInt("ecstat",i)-1);
         ectot = ecpb.getFloat("etot",bank.getInt("ecstat",i)-1);
         ecTime = ecpb.getFloat("time",bank.getInt("ecstat",i)-1);
+        ecX = ecpb.getFloat("x",bank.getInt("ecstat",i)-1);
+        ecY = ecpb.getFloat("y",bank.getInt("ecstat",i)-1);
+        ecZ = ecpb.getFloat("z",bank.getInt("ecstat",i)-1);
+        ecXYZ.setXYZ(ecX,ecY,ecZ);
+        h2_EC_XvsY[0].fill(ecX,ecY);
+        if(myEC.FidCutXYZ(ecXYZ)){
+          cutECfid = true;
+          h2_EC_XvsY[1].fill(ecX,ecY);
+        } else{
+          h2_EC_XvsY[2].fill(ecX,ecY);
+        }
+        ecUVW = myEC.XYZtoUVW(ecXYZ);
+        h1_EC_U.fill(ecUVW.x());
+        h1_EC_V.fill(ecUVW.y());
+        h1_EC_W.fill(ecUVW.z());
+        if(myEC.FidCutU(ecUVW.x())) h1_EC_U_fid.fill(ecUVW.x());
+        if(myEC.FidCutV(ecUVW.y())) h1_EC_V_fid.fill(ecUVW.y());
+        if(myEC.FidCutW(ecUVW.z())) h1_EC_W_fid.fill(ecUVW.z());
       }
       if(bank.getInt("scstat",i)>0 && scpb.getRows()>0){ // check SC
         cutSCstat = true;
@@ -195,19 +259,14 @@ while(reader.hasNext()) {
       if(cutCCstat && cutECstat && cutSCstat){ // proceed if EC && CC && SC
         cutElectronMom = (electron.p()>=ELECTRON_MOM); // electron momentum cut
 
-        LorentzVector vecQ2 = LorentzVector.from(beam);   // calculate Q-squared, first copy incident e- 4-vector
-        vecQ2.sub(electron);  // calculate Q-squared, subtract scattered e- 4-vector
-        posQ2 = -vecQ2.mass2(); // calcuate Q-squared, make into a positive value
-        cutQ2 = (posQ2>=Q2_DIS);
+        myRK.setScatteredElectron(electron);
 
-        LorentzVector vecW2 = LorentzVector.from(beam); // calculate W, first copy incident e- 4-vector
-        vecW2.add(protonTarget).sub(electron); // calculate W, add target proton 4-vector and subtract scattered e- 4-vector
-        cutW = (vecW2.mass()>=W_DIS);
+        double posQ2 = myRK.Q2();
+        double nu = myRK.nu();
+        if(myRK.Q2()>=Q2_DIS) cutQ2 = true;
+        if(myRK.W()>=W_DIS) cutW = true;
+        if(myRK.Yb()<=YB_DIS) cutYb = true;
 
-        nu = beamEnergy - electron.e(); // calculate nu
-        Xb = posQ2/(2*nu*PhyConsts.massProton()); // calcuate x-byorken
-        Yb = nu/beamEnergy; // calculate normalized nu
-        cutYb = (Yb<=YB_DIS); // Y cut
         cutCCnphe = (cc_nphe>=NPHE_MIN); // CC number of photoelectrons cut
         cutECin = (ecin >= ECIN_MIN); // EC inner energy cut
         if(electron.p()>0.0){
@@ -227,6 +286,8 @@ while(reader.hasNext()) {
         if(cutQ2 && cutW  && cutYb && cutElectronMom && cutECoverP && cutCCnphe && cutdtECSC && cutECin){
           int emFidCut = 0;         // initialized fiducial cut flag
           if(cutFidCut) emFidCut = 1;  // set fiducial cut flag if true
+          int emECFidCut = 0;         // initialized fiducial cut flag
+          if(cutECfid) emECFidCut = 1;  // set fiducial cut flag if true
           int emTgt = myTarget.Get_TargetIndex(v3electron_corr);
           treeItem[0] = runNum;
           treeItem[1] = evtNum;
@@ -240,10 +301,11 @@ while(reader.hasNext()) {
           treeItem[9] = v3electron_corr.z();
           treeItem[10] = posQ2;
           treeItem[11] = nu;
-          treeItem[12] = vecW2.mass();
-          treeItem[13] = Xb;
-          treeItem[14] = Yb;
+          treeItem[12] = myRK.W();
+          treeItem[13] = myRK.Xb();
+          treeItem[14] = myRK.Yb();
           treeItem[15] = emFidCut;
+          treeItem[16] = emECFidCut;
           tree.addRow(treeItem);  // add the tree data
 
           h1_nElectron[0][emTgt].fill(posQ2);
@@ -332,6 +394,32 @@ if(bGraph){
       System.out.println("<<< nu " + Nubins[iNu] + " : " + Nubins[iNu+1] + " >>>");
       System.out.println(h2_Q2_Nu_binned[1].getBinContent(iQsq,iNu) + " / " + h2_Q2_Nu_binned[0].getBinContent(iQsq,iNu) + " = " + h2_Q2_Nu_binned_ratio.getBinContent(iQsq,iNu));
     }
+  }
+
+  int c3_title_size = 24;
+  TCanvas c3 = new TCanvas("c3",1400,450);
+  c3.divide(3,1);
+  c3.cd(0);
+  c3.getPad().setTitleFontSize(c3_title_size);
+  c3.draw(h1_EC_U);
+  c3.draw(h1_EC_U_fid,"same");
+  c3.cd(1);
+  c3.getPad().setTitleFontSize(c3_title_size);
+  c3.draw(h1_EC_V);
+  c3.draw(h1_EC_V_fid,"same");
+  c3.cd(2);
+  c3.getPad().setTitleFontSize(c3_title_size);
+  c3.draw(h1_EC_W);
+  c3.draw(h1_EC_W_fid,"same");
+
+  int c4_title_size = 24;
+  TCanvas c4 = new TCanvas("c4",1400,450);
+  c4.divide(3,1);
+  histsECxy.eachWithIndex { hname, ih->
+    c4.cd(ih);
+    c4.getPad().setTitleFontSize(c4_title_size);
+    c4.getPad().getAxisZ().setLog(true);
+    c4.draw(h2_EC_XvsY[ih]);
   }
 
   TCanvas c7 = new TCanvas("c7",1200,800);
