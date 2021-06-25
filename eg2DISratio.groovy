@@ -206,6 +206,7 @@ while(reader.hasNext()) {
       boolean cutElectronMom = false;
       boolean cutQ2 = false;
       boolean cutW = false;
+      boolean cutYb = false;      
       boolean cutCCnphe = false;
       boolean cutCCstat = false;
       boolean cutECstat = false;
