@@ -2,6 +2,7 @@
 
 $filelist = $ARGV[0];
 $solid = $ARGV[1];
+$cpDir = $ARGV[2];
 
 $jawDir = "$ENV{HOME}/jlab/clas12/jaw-2.1/bin";
 $RunGroovy = "$jawDir/run-groovy";
@@ -18,5 +19,9 @@ while (defined($line=<LIST>)) {
     $cmd = "$RunGroovy eg2DISratio.groovy -s $solid -o $outfile $line > $logfile";
     print "$cmd\n";
     system($cmd);
+    $mvHipo = "mv -v $outfile $cpDir";
+    system($mvHipo);
+    $mvLog = "mv -v $logfile $cpDir";
+    system($mvLog);
 }
 close(LIST);
