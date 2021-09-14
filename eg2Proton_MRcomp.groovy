@@ -69,6 +69,7 @@ Var.eachWithIndex { nVar, iVar->
 TCanvas[] canAcc = new TCanvas[Var.size()];
 GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
 
+// loop over the 1-D variables 
 Var.eachWithIndex { nVar, iVar->
   if(nVar!="phiPQ"){
     String cname = "canAcc" + iVar;
