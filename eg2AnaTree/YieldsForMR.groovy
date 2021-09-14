@@ -17,8 +17,8 @@ class YieldsForMR {
   List<Integer> nbins = myHI.getNbins();
 
   int maxEvents = -1; //default is to analyze all events
-  String VarList = "q2:nu:zh:pT2:zLC";
-  String[] Cuts = ["pFidCut==1&&eFidCut==1&&iTgt==0","pFidCut==1&&eFidCut==1&&iTgt==1"];
+  String VarList = "q2:nu:zh:pT2:zLC:zLC:phiPQ";
+  String[] Cuts = ["pFidCut==1&&eFidCut==1&&eFidEC==1&&iTgt==0","pFidCut==1&&eFidCut==1&&eFidEC==1&&iTgt==1"];
 
   TreeHipo tree;
   H1F[] hYlds = new H1F[Var.size()];

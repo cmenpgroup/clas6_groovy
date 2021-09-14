@@ -28,7 +28,7 @@ double W_DIS = myTarget.Get_W_DIS();
 double Q2_DIS = myTarget.Get_Q2_DIS();
 double YB_DIS = myTarget.Get_YB_DIS();
 
-def cli = new CliBuilder(usage:'eg2Proton_AnaTree.groovy [options] infile1 infile2 ...')
+def cli = new CliBuilder(usage:'eg2Proton_AnaTree_MR2pT2_OneTgt.groovy [options] infile1 infile2 ...')
 cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.o(longOpt:'output', args:1, argName:'Histogram output file', type: String, 'Output file name')
@@ -41,7 +41,7 @@ if (options.h){ cli.usage(); return; }
 def maxEvents = -1;
 if(options.M) maxEvents = options.M;
 
-def outFile = "eg2Proton_AnaTree_MR_OneTgt_Hists.hipo";
+def outFile = "eg2Proton_AnaTree_MR2pT2_OneTgt_Hists.hipo";
 if(options.o) outFile = options.o;
 
 String userTgt = "C";
@@ -62,13 +62,13 @@ extraArguments.each { infile ->
 long st = System.currentTimeMillis(); // start time
 
 HistInfo myHI = new HistInfo();
-YieldsForMR myMR = new YieldsForMR(fileName);
+YieldsForMR2pT2 myMR = new YieldsForMR2pT2(fileName);
 myMR.setMaxEvents(maxEvents);
+
+List<String> zhCuts = myMR.getZhCuts();
 
 TDirectory dir = new TDirectory();
 
-List<String> Var = myHI.getVariables();
-List<String> xLabel = myHI.getXlabel();
 List<String> TgtLabel = myHI.getTgtlabel();
 List<String> solidTgt = myHI.getSolidTgtLabel();
 
@@ -80,44 +80,45 @@ if(indexTgt==-1){
 }
 
 String[] DirLabel = ["/LD2","/Solid","/multiplicity"];
-H1F[][] h1_nProton = new H1F[Var.size()][TgtLabel.size()];
+H1F[][] h1_nProton = new H1F[zhCuts.size()][TgtLabel.size()];
 
 TgtLabel.eachWithIndex{nTgt,iTgt->
   myMR.createHistograms(iTgt);
   dir.mkdir(DirLabel[iTgt]);
   dir.cd(DirLabel[iTgt]);
-  Var.eachWithIndex { nVar, iVar->
-    h1_nProton[iVar][iTgt] = myMR.getHistogram(iVar);
-    dir.addDataSet(h1_nProton[iVar][iTgt]); // add to the histogram file
+
+  zhCuts.eachWithIndex { nZh, iZh->
+    h1_nProton[iZh][iTgt] = myMR.getHistogram(iZh);
+    dir.addDataSet(h1_nProton[iZh][iTgt]); // add to the histogram file
   }
 }
 
 dir.mkdir(DirLabel[2]);
 dir.cd(DirLabel[2]);
 
-TCanvas[] can = new TCanvas[Var.size()];
 int c_title_size = 24;
+TCanvas can = new TCanvas("can",900,900);
+can.divide(3,3);
 
-H1F[] h1_mrProton = new H1F[Var.size()];
-GraphErrors[] gr_mrProton = new GraphErrors[Var.size()];
-Var.eachWithIndex{nVar, iVar->
-  String canName = "c" + iVar;
-  can[iVar] = new TCanvas(canName,600,600);
-  can[iVar].cd(0);
-  can[iVar].getPad().setTitleFontSize(c_title_size);
-  h1_mrProton[iVar] = H1F.divide(h1_nProton[iVar][1],h1_nProton[iVar][0]);
-  h1_mrProton[iVar].setName("h1_mrProton_" + nVar);
-  h1_mrProton[iVar].setFillColor(GREEN);
-  gr_mrProton[iVar] = h1_mrProton[iVar].getGraph();
-  gr_mrProton[iVar].setName("gr_mrProton_" + nVar);
-  gr_mrProton[iVar].setTitle("eg2 - " + solidTgt[indexTgt] + "/D2");
-  gr_mrProton[iVar].setTitleX(xLabel[iVar]);
-  gr_mrProton[iVar].setTitleY("R^p");
-  gr_mrProton[iVar].setMarkerColor(3);
-  gr_mrProton[iVar].setLineColor(3);
-  gr_mrProton[iVar].setMarkerSize(3);
-  can[iVar].draw(gr_mrProton[iVar],"line");
-  dir.addDataSet(gr_mrProton[iVar]); // add to the histogram file
+H1F[] h1_mrProton = new H1F[zhCuts.size()];
+GraphErrors[] gr_mrProton = new GraphErrors[zhCuts.size()];
+
+zhCuts.eachWithIndex { nZh, iZh->
+  can.cd(iZh);
+  can.getPad().setTitleFontSize(c_title_size);
+  h1_mrProton[iZh] = H1F.divide(h1_nProton[iZh][1],h1_nProton[iZh][0]);
+  h1_mrProton[iZh].setName("h1_mrProton_pT2_" + iZh);
+  h1_mrProton[iZh].setFillColor(GREEN);
+  gr_mrProton[iZh] = h1_mrProton[iZh].getGraph();
+  gr_mrProton[iZh].setName("gr_mrProton_pT2_" + iZh);
+  gr_mrProton[iZh].setTitle("eg2 - " + solidTgt[indexTgt] + "/D2");
+  gr_mrProton[iZh].setTitleX(myMR.getXlabel());
+  gr_mrProton[iZh].setTitleY("R^p");
+  gr_mrProton[iZh].setMarkerColor(3);
+  gr_mrProton[iZh].setLineColor(3);
+  gr_mrProton[iZh].setMarkerSize(3);
+  can.draw(gr_mrProton[iZh],"line");
+  dir.addDataSet(gr_mrProton[iZh]); // add to the histogram file
 }
 
 dir.writeFile(outFile); // write the histograms to the file

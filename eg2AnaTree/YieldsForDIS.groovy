@@ -18,7 +18,7 @@ class YieldsForDIS {
 
   int maxEvents = -1; //default is to analyze all events
   String VarList = "q2:nu";
-  String[] Cuts = ["eFidCut==1&&iTgt==0","eFidCut==1&&iTgt==1"];
+  String[] Cuts = ["eFidCut==1&&eFidEC==1&&iTgt==0","eFidCut==1&&eFidEC==1&&iTgt==1"];
 
   double[] normDIS = [1.11978 ,  1.0609 ,  2.19708]; // DIS e- normalization factors (Acc Corr, Rad Corr and Coulomb)
 
