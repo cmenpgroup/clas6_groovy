@@ -18,9 +18,10 @@ GStyle.getAxisAttributesY().setLabelFontSize(18);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
 Double corrMR, errMR;
-Double x, y, err;
+Double x, y, err, ytemp;
 Double relErrSq;
 String[] str;
+double[] normCorr = [1.11978 ,  1.0609 ,  2.19708];
 
 def cli = new CliBuilder(usage:'eg2Proton_MRcorr.groovy [options] infile1')
 cli.h(longOpt:'help', 'Print this message.')
@@ -111,7 +112,17 @@ Var.eachWithIndex { nVar, iVar->
         }
       }
       if(x>xlo[iVar] && x<=xhi[iVar]){
-        gr_acc.addPoint(x,y,0.0,err);
+        if(y>0.0){
+          if(nVar=="q2" || nVar=="nu"){
+            ytemp = 1.0/y;
+          }else{
+            ytemp = normCorr[indexTgt]*normCorr[indexTgt]/y;
+          }
+        }else{
+          ytemp = 0.0;  
+        }
+        gr_acc.addPoint(x,ytemp,0.0,err);
+//        gr_acc.addPoint(x,y,0.0,err);
       }
     }
     accX = gr_acc.getVectorX();

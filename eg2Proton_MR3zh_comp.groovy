@@ -19,10 +19,14 @@ GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
 def cli = new CliBuilder(usage:'eg2Proton_MR3zh_comp.groovy')
 cli.h(longOpt:'help', 'Print this message.')
+cli.L(longOpt:'log', 'Set log scale')
 
 def options = cli.parse(args);
 if (!options) return;
 if (options.h){ cli.usage(); return; }
+
+boolean setLog = false;
+if(options.L) setLog = true;
 
 HistInfo myHI = new HistInfo();
 List<String> solidTgt = myHI.getSolidTgtLabel();
@@ -46,10 +50,11 @@ solidTgt.eachWithIndex { nTgt, iTgt ->
 
 GraphErrors[][][] gr_mrProtonCorr = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
 
-Q2Cuts.eachWithIndex { nQ2, iQ2->
-  nuCuts.eachWithIndex { nNu, iNu->
+nuCuts.eachWithIndex { nNu, iNu->
+  Q2Cuts.eachWithIndex { nQ2, iQ2->
     can.cd(canCount);
     can.getPad().setTitleFontSize(c1_title_size);
+    if(setLog) can.getPad().getAxisY().setLog(true);
 
     String grcorr = "gr_mrProtonCorr_" + iQ2 + iNu;
 
@@ -60,6 +65,7 @@ Q2Cuts.eachWithIndex { nQ2, iQ2->
       gr_mrProtonCorr[iQ2][iNu][iTgt].setMarkerColor(iTgt+1);
       gr_mrProtonCorr[iQ2][iNu][iTgt].setLineColor(iTgt+1);
       gr_mrProtonCorr[iQ2][iNu][iTgt].setMarkerSize(5);
+      gr_mrProtonCorr[iQ2][iNu][iTgt].setMarkerStyle(iTgt);
       if(iTgt==0){
         can.draw(gr_mrProtonCorr[iQ2][iNu][iTgt]);
       }else{
@@ -75,8 +81,8 @@ TCanvas canAcc = new TCanvas("canAcc",900,900);
 canAcc.divide(Q2Cuts.size(),nuCuts.size());
 GraphErrors[][][] grAcc = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
 
-Q2Cuts.eachWithIndex { nQ2, iQ2->
-  nuCuts.eachWithIndex { nNu, iNu->
+nuCuts.eachWithIndex { nNu, iNu->
+  Q2Cuts.eachWithIndex { nQ2, iQ2->
     canAcc.cd(canCount);
     canAcc.getPad().setTitleFontSize(c1_title_size);
 
@@ -89,10 +95,42 @@ Q2Cuts.eachWithIndex { nQ2, iQ2->
       grAcc[iQ2][iNu][iTgt].setMarkerColor(iTgt+1);
       grAcc[iQ2][iNu][iTgt].setLineColor(iTgt+1);
       grAcc[iQ2][iNu][iTgt].setMarkerSize(5);
+      grAcc[iQ2][iNu][iTgt].setMarkerStyle(iTgt);
       if(iTgt==0){
         canAcc.draw(grAcc[iQ2][iNu][iTgt]);
       }else{
         canAcc.draw(grAcc[iQ2][iNu][iTgt],"same");
+      }
+    }
+    canCount++;
+  }
+}
+
+canCount = 0;
+TCanvas canTgt = new TCanvas("canTgt",900,900);
+canTgt.divide(Q2Cuts.size(),solidTgt.size());
+
+GraphErrors[][][] gr_mrProtonTgt = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
+
+Q2Cuts.eachWithIndex { nQ2, iQ2->
+  solidTgt.eachWithIndex { nTgt, iTgt ->
+    canTgt.cd(canCount);
+    canTgt.getPad().setTitleFontSize(c1_title_size);
+    if(setLog) canTgt.getPad().getAxisY().setLog(true);
+
+    nuCuts.eachWithIndex { nNu, iNu->
+      gr_mrProtonTgt[iQ2][iNu][iTgt] = new GraphErrors("gr_copy_"+iQ2+iNu+iTgt);
+      gr_mrProtonTgt[iQ2][iNu][iTgt].copy(gr_mrProtonCorr[iQ2][iNu][iTgt]);
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setTitleX("z_h");
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setTitleY("R^p");
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setMarkerColor(iNu+1);
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setLineColor(iNu+1);
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setMarkerSize(5);
+      gr_mrProtonTgt[iQ2][iNu][iTgt].setMarkerStyle(iNu);
+      if(iNu==0){
+        canTgt.draw(gr_mrProtonTgt[iQ2][iNu][iTgt]);
+      }else{
+        canTgt.draw(gr_mrProtonTgt[iQ2][iNu][iTgt],"same");
       }
     }
     canCount++;

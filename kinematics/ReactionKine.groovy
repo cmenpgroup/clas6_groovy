@@ -9,9 +9,27 @@ class ReactionKine {
   LorentzVector scatteredElectron = new LorentzVector(0.0,0.0,0.0,0.0);
   LorentzVector virtualPhoton = new LorentzVector(0.0,0.0,0.0,0.0);
   LorentzVector hadron = new LorentzVector(0.0,0.0,0.0,0.0);
+  LorentzVector targetLiquid = new LorentzVector(0.0,0.0,0.0,0.0);
+  LorentzVector targetSolid = new LorentzVector(0.0,0.0,0.0,0.0);
 
   PhysicsConstants PhyConsts= new PhysicsConstants();
 
+  int solidTgtIndex = -1;
+  def solidTgt = ["C","Fe","Pb"];
+  double[] solidTgtMass = [11.1880,52.0196,193.0068];  // nuclear mass in GeV/c^2
+  double amu2GeV = 0.9315; // 1 amu = 0.931494 GeV/c^2
+  double deuteronMass = 1.875612762; // deuteron mass in GeV/c^2
+
+  void setSolidTarget(String userTgt){
+      solidTgtIndex = solidTgt.indexOf(userTgt);
+      if(solidTgtIndex==-1){
+        println "Target " + userTgt + " is unavailable! Please choose one of the following:";
+        println solidTgt;
+        exit;
+      }
+      targetLiquid.setPxPyPzM(0.0,0.0,0.0,deuteronMass);
+      targetSolid.setPxPyPzM(0.0,0.0,0.0,solidTgtMass[solidTgtIndex]);
+  }
   void setBeam(double beamE, double beamM){
       beamElectron.setPxPyPzM(0.0,0.0,beamE,beamM);
   }
@@ -48,6 +66,29 @@ class ReactionKine {
   double W(){
     LorentzVector virt = this.getVirtualPhoton()
     return virt.add(target).mass();
+  }
+  double Mx(){ // missing mass: beam + target - scatterElectron - hadron
+    LorentzVector virt = this.getVirtualPhoton();
+    return virt.add(target).sub(hadron).mass();
+  }
+  double MxNuclei(int isSolid){ // missing mass: beam + nucleus - scatterElectron - hadron
+    LorentzVector virt = this.getVirtualPhoton();
+    switch(isSolid){
+      case 0:
+        virt.add(targetLiquid);
+        break;
+      case 1:
+        virt.add(targetSolid);
+        break;
+      case 2:
+        virt.add(target);
+        break;
+      default:
+        println "ReactionKine.groovy: MxNuclei(): Unknown target region" + isSolid;
+        exit;
+        break;
+    }
+    return virt.sub(hadron).mass();
   }
   double nu(){
     return beamElectron.e()-scatteredElectron.e();

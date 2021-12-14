@@ -33,7 +33,7 @@ int c1_title_size = 22;
 TCanvas[] can = new TCanvas[Var.size()];
 TDirectory[] dir = new TDirectory[solidTgt.size()];
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String fileName = "eg2Proton_MRcorr_hists_" + nTgt + ".hipo";
+  String fileName = "eg2Proton_MRcorr_hists_" + nTgt + "_newAcc.hipo";
   println fileName;
   dir[iTgt] = new TDirectory();
   dir[iTgt].readFile(fileName);
@@ -57,6 +57,7 @@ Var.eachWithIndex { nVar, iVar->
       gr_mrProtonCorr[iVar][iTgt].setMarkerColor(iTgt+1);
       gr_mrProtonCorr[iVar][iTgt].setLineColor(iTgt+1);
       gr_mrProtonCorr[iVar][iTgt].setMarkerSize(5);
+      gr_mrProtonCorr[iVar][iTgt].setMarkerStyle(iTgt);
       if(iTgt==0){
         can[iVar].draw(gr_mrProtonCorr[iVar][iTgt]);
       }else{
@@ -69,7 +70,7 @@ Var.eachWithIndex { nVar, iVar->
 TCanvas[] canAcc = new TCanvas[Var.size()];
 GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
 
-// loop over the 1-D variables 
+// loop over the 1-D variables
 Var.eachWithIndex { nVar, iVar->
   if(nVar!="phiPQ"){
     String cname = "canAcc" + iVar;
@@ -85,6 +86,7 @@ Var.eachWithIndex { nVar, iVar->
       grAcc[iVar][iTgt].setMarkerColor(iTgt+1);
       grAcc[iVar][iTgt].setLineColor(iTgt+1);
       grAcc[iVar][iTgt].setMarkerSize(5);
+      grAcc[iVar][iTgt].setMarkerStyle(iTgt);
       if(iTgt==0){
         canAcc[iVar].draw(grAcc[iVar][iTgt]);
       }else{

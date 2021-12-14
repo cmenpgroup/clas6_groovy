@@ -34,7 +34,6 @@ int NUM_ELECTRONS = 1;
 int NUM_PROTONS = 1;
 
 double beamEnergy = myTarget.Get_Beam_Energy();
-println "Beam " + beamEnergy + " GeV";
 double W_DIS = myTarget.Get_W_DIS();
 double Q2_DIS = myTarget.Get_Q2_DIS();
 double YB_DIS = myTarget.Get_YB_DIS();
@@ -109,7 +108,6 @@ h1_EC_W_fid.setFillColor(GREEN);
 
 PhysicsConstants PhyConsts= new PhysicsConstants();
 double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
-println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 LorentzVector electron = new LorentzVector(0,0,0,0);
 Vector3 v3electron = new Vector3(0,0,0);
@@ -125,10 +123,11 @@ myRK.setTarget(PhyConsts.massProton());
 
 def cli = new CliBuilder(usage:'eg2ProtonTree.groovy [options] infile1 infile2 ...')
 cli.h(longOpt:'help', 'Print this message.')
-cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
-cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
-cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name')
-cli.g(longOpt:'graph', 'Graph monitoring histograms')
+cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events');
+cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter');
+cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name');
+cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)');
+cli.g(longOpt:'graph', 'Graph monitoring histograms');
 
 def options = cli.parse(args);
 if (!options) return;
@@ -143,6 +142,10 @@ if(options.M) maxEvents = options.M;
 def outFile = "eg2ProtonNtuple.hipo";
 if(options.o) outFile = options.o;
 
+String userTgt = "C";
+if(options.s) userTgt = options.s;
+myRK.setSolidTarget(userTgt);
+
 boolean bGraph = false;
 if(options.g) bGraph = true;
 
@@ -152,6 +155,9 @@ if (extraArguments.isEmpty()){
   cli.usage();
   return;
 }
+
+println "Beam " + beamEnergy + " GeV";
+println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 HipoChain reader = new HipoChain();
 
@@ -167,9 +173,9 @@ Bank       ccpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ccpb
 Bank       ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb"));
 Bank       scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
-// Define a ntuple tree with 5 variables
-TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:eTheta:ePhi:eVx:eVy:eVz:pNum:pIndex:pPx:pPy:pPz:pTheta:pPhi:pVx:pVy:pVz:q2:nu:W:zh:zLC:pT2:xb:yb:phiPQ:pFidCut:eFidCut:eFidEC");
-float[]  treeItem = new float[35];
+// Define a ntuple tree with many variables
+TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:eTheta:ePhi:eVx:eVy:eVz:pNum:pIndex:pPx:pPy:pPz:pTheta:pPhi:pVx:pVy:pVz:q2:nu:W:zh:zLC:pT2:xb:yb:phiPQ:pFidCut:eFidCut:eFidEC:Mx:MxNuclei");
+float[]  treeItem = new float[37];
 
 // Loop over all events
 while(reader.hasNext()){
@@ -395,6 +401,8 @@ while(reader.hasNext()){
           treeItem[32] = pFidCut;
           treeItem[33] = emFidCut;
           treeItem[34] = emECFidCut;
+          treeItem[35] = myRK.Mx();
+          treeItem[36] = myRK.MxNuclei(pTgt);
           tree.addRow(treeItem);  // add the tree data
         }
       }

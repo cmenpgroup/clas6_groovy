@@ -36,7 +36,7 @@ int c1_title_size = 22;
 
 TDirectory[] dir = new TDirectory[solidTgt.size()];
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String fileName = "eg2Proton_MR2pT2_corr_hists_" + nTgt + ".hipo";
+  String fileName = "eg2Proton_MR2pT2_corr_hists_" + nTgt + "_newAcc.hipo";
   println fileName;
   dir[iTgt] = new TDirectory();
   dir[iTgt].readFile(fileName);
@@ -57,6 +57,7 @@ zhCuts.eachWithIndex { nZh, iZh->
     gr_mrProtonCorr[iZh][iTgt].setMarkerColor(iTgt+1);
     gr_mrProtonCorr[iZh][iTgt].setLineColor(iTgt+1);
     gr_mrProtonCorr[iZh][iTgt].setMarkerSize(5);
+    gr_mrProtonCorr[iZh][iTgt].setMarkerStyle(iTgt);
     if(iTgt==0){
       can.draw(gr_mrProtonCorr[iZh][iTgt]);
     }else{
@@ -82,6 +83,7 @@ zhCuts.eachWithIndex { nZh, iZh->
     grAcc[iZh][iTgt].setMarkerColor(iTgt+1);
     grAcc[iZh][iTgt].setLineColor(iTgt+1);
     grAcc[iZh][iTgt].setMarkerSize(5);
+    grAcc[iZh][iTgt].setMarkerStyle(iTgt);
     if(iTgt==0){
       canAcc.draw(grAcc[iZh][iTgt]);
     }else{

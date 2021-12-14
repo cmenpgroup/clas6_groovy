@@ -16,6 +16,7 @@ int YELLOW = 35;
 
 double x, y, err;
 String[] str;
+double[] normCorr = [1.11978 ,  1.0609 ,  2.19708];
 
 def cli = new CliBuilder(usage:'eg2Proton_MR2pT2_corr.groovy [options] infile1 infile2 ...')
 cli.h(longOpt:'help', 'Print this message.')
@@ -47,7 +48,13 @@ extraArguments.each { infile ->
 HistInfo myHI = new HistInfo();
 List<String> TgtLabel = myHI.getTgtlabel();
 List<String> solidTgt = myHI.getSolidTgtLabel();
-int indexTgt = 0;
+
+int indexTgt = solidTgt.indexOf(userTgt);
+if(indexTgt==-1){
+  println "Target " + userTgt + " is unavailable! Please choose one of the following:";
+  println solidTgt;
+  return;
+}
 
 YieldsForMR2pT2 myMR = new YieldsForMR2pT2();
 List<Double> xlo = myMR.getXlo();
@@ -94,7 +101,7 @@ zhCuts.eachWithIndex { nZh, iZh->
         default: break;
       }
     }
-    if(x>xlo[iZh] && x<=xhi[iZh]) gr_acc.addPoint(x,y,0.0,err);
+    if(x>xlo[iZh] && x<=xhi[iZh]) gr_acc.addPoint(x,normCorr[indexTgt]*normCorr[indexTgt]/y,0.0,err);
   }
   accX = gr_acc.getVectorX();
   accY = gr_acc.getVectorY();
