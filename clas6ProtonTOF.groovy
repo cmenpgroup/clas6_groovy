@@ -21,6 +21,8 @@ def cli = new CliBuilder(usage:'clas6ProtonTOF.groovy [options] infile1 infile2 
 cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
+cli.nL(longOpt:'nSigLower', args:1, argName:'number of sigma in lower cut', type: double, 'Number of Sigma in Lower Cut (pos. number)')
+cli.nU(longOpt:'nSigUpper', args:1, argName:'number of sigma in upper cut', type: double, 'Number of Sigma in Upper Cut (pos. number)')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -32,12 +34,20 @@ if(options.c) printCounter = options.c;
 def maxEvents = 0;
 if(options.M) maxEvents = options.M;
 
+def nSigmaLower = -2.0;
+if(options.nL) nSigmaLower = -1.0*options.nL;
+
+def nSigmaUpper = 2.0;
+if(options.nU) nSigmaUpper = options.nU;
+
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
   println "No input file!";
   cli.usage();
   return;
 }
+
+println "Number of sigma in cut: " + nSigmaLower + " / " + nSigmaUpper;
 
 HipoChain reader = new HipoChain();
 
@@ -185,7 +195,7 @@ fitterMid1.inspectFits();
 
 TCanvas c4 = new TCanvas("c4",600,600);
 ParallelSliceFitter fitterMid2 = new ParallelSliceFitter(h2_dTOF_VS_P_mid2);
-fitterMid2.setRange(-3.0,3.0);
+fitterMid2.setRange(-1.25,1.25);
 fitterMid2.setBackgroundOrder(ParallelSliceFitter.P1_BG);
 fitterMid2.fitSlicesX();
 //fitterMid2.setLineColor(32);
@@ -196,7 +206,7 @@ fitterMid2.inspectFits();
 
 TCanvas c5 = new TCanvas("c5",600,600);
 ParallelSliceFitter fitterHi = new ParallelSliceFitter(h2_dTOF_VS_P_hi);
-fitterHi.setRange(-1.5,1.5);
+fitterHi.setRange(-0.55,1.0);
 fitterHi.setBackgroundOrder(ParallelSliceFitter.P1_BG);
 fitterHi.fitSlicesX();
 //fitterHi.setLineColor(32);
@@ -257,14 +267,14 @@ DataVector yLower = new DataVector();
 DataVector yLowerSigma = new DataVector();
 yLower.copy(yMean);
 yLowerSigma.copy(ySigma);
-yLowerSigma.mult(-2.0);
+yLowerSigma.mult(nSigmaLower);
 yLower.addDataVector(yLowerSigma);
 
 DataVector yUpper = new DataVector();
 DataVector yUpperSigma = new DataVector();
 yUpper.copy(yMean);
 yUpperSigma.copy(ySigma);
-yUpperSigma.mult(2.0);
+yUpperSigma.mult(nSigmaUpper);
 
 yUpper.addDataVector(yUpperSigma);
 
@@ -336,3 +346,5 @@ f4.setLineStyle(1);
 println "Parameters: f4"
 for(int j=0; j<f4.getNPars(); j++) System.out.println(" par = " + f4.parameter(j).value() + " error = " + f4.parameter(j).error());;
 c8.draw(f4,"same");
+
+println "Number of sigma in cut: " + nSigmaLower + " / " + nSigmaUpper;

@@ -71,6 +71,10 @@ class ReactionKine {
     LorentzVector virt = this.getVirtualPhoton();
     return virt.add(target).sub(hadron).mass();
   }
+  double Mx2(){ // missing mass: beam + target - scatterElectron - hadron
+    LorentzVector virt = this.getVirtualPhoton();
+    return virt.add(target).sub(hadron).mass2();
+  }
   double MxNuclei(int isSolid){ // missing mass: beam + nucleus - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhoton();
     switch(isSolid){
