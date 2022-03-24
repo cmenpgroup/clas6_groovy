@@ -1,6 +1,17 @@
 package eg2Cuts
 
-class clas6Proton {
+import org.jlab.groot.base.GStyle;
+import org.jlab.groot.data.*;
+import org.jlab.groot.ui.*;
+import org.jlab.groot.math.*;
+import org.jlab.groot.fitter.*;
+
+public class clas6Proton {
+
+    public enum ProtonIDCuts{
+      STD,SIGMA_1_0,SIGMA_1_5,SIGMA_2_0,SIGMA_2_5,SIGMA_3_0
+    }
+
     static def Plimits = [0.2,0.8,3.0];
 //  Parameters from Or Hen
     static def lowP_lower = [-26.8257,153.155,-408.979,673.476,-790.433,708.255,-474.843,217.295,-58.6269,6.90981];
@@ -34,7 +45,47 @@ class clas6Proton {
     static def highP_lower_3_0 = [-1.3055347924459686,0.525977807081282,-0.1531134059895049,0.02288879048040078];
     static def highP_upper_3_0 = [1.7478494162337979,-1.0733689663581678,0.47503232770150855,-0.08321267697517896];
 
-    static Map IDfcn_proton = [lowMomLower:lowP_lower,lowMomUpper:lowP_upper,highMomLower:highP_lower,highMomUpper:highP_upper];
+    static Map IDfcn_proton = [loP_bot_std:lowP_lower,loP_top_std:lowP_upper,hiP_bot_std:highP_lower,hiP_top_std:highP_upper,
+                               loP_bot_1_0:lowP_lower_1_0,loP_top_1_0:lowP_upper_1_0,hiP_bot_1_0:highP_lower_1_0,hiP_top_1_0:highP_upper_1_0,
+                               loP_bot_1_5:lowP_lower_1_5,loP_top_1_5:lowP_upper_1_5,hiP_bot_1_5:highP_lower_1_5,hiP_top_1_5:highP_upper_1_5,
+                               loP_bot_2_0:lowP_lower_2_0,loP_top_2_0:lowP_upper_2_0,hiP_bot_2_0:highP_lower_2_0,hiP_top_2_0:highP_upper_2_0,
+                               loP_bot_2_5:lowP_lower_2_5,loP_top_2_5:lowP_upper_2_5,hiP_bot_2_5:highP_lower_2_5,hiP_top_2_5:highP_upper_2_5,
+                               loP_bot_3_0:lowP_lower_3_0,loP_top_3_0:lowP_upper_3_0,hiP_bot_3_0:highP_lower_3_0,hiP_top_3_0:highP_upper_3_0];
+
+    ProtonIDCuts mycuts;
+
+    public void SetCuts(ProtonIDCuts cuts) {this.mycuts = cuts;}
+
+    public String GetCutName(){
+        println "clas6Proton::GetCutName " + this.mycuts;
+        String ret;
+        this.mycuts = ProtonIDCuts.STD;
+        println "clas6Proton::GetCutName " + this.mycuts;        
+        switch(this.mycuts){
+          case STD:
+            ret = "loP_bot_std";
+            break;
+          case SIGMA_1_0:
+            ret = "loP_bot_1_0";
+            break;
+          case SIGMA_1_5:
+            ret = "loP_bot_1_5";
+            break;
+          case SIGMA_2_0:
+            ret = "loP_bot_2_0";
+            break;
+          case SIGMA_2_5:
+            ret = "loP_bot_2_5";
+            break;
+          case SIGMA_3_0:
+            ret = "loP_bot_3_0";
+            break;
+          default:
+            ret = "loP_bot_std";
+            break;
+        }
+        return ret;
+    }
 
     static boolean  Get_ProtonTOF_Cut(double mom, double corrTOF) {
         double low = 0.0;
@@ -44,26 +95,26 @@ class clas6Proton {
         switch(mom){
           // test low momentum cut
           case {(mom>=this.Plimits[0]) && (mom<this.Plimits[1])}:
-            this.IDfcn_proton["lowMomLower"].eachWithIndex { val, index ->
+            this.IDfcn_proton["loP_bot_std"].eachWithIndex { val, index ->
                 low = low + val*Math.pow(mom,index);
             }
-            this.IDfcn_proton["lowMomUpper"].eachWithIndex { val, index ->
+            this.IDfcn_proton["loP_top_std"].eachWithIndex { val, index ->
                 hi = hi + val*Math.pow(mom,index);
             }
             ret = ((corrTOF>=low) && (corrTOF<=hi));
-//            ret = ((corrTOF>=this.Get_CorrectedVertex_Cut(mom,"lowMomLower")) && (corrTOF<=this.Get_CorrectedVertex_Cut(mom,"lowMomUpper")));
+//            ret = ((corrTOF>=this.Get_CorrectedVertex_Cut(mom,"loP_bot_std")) && (corrTOF<=this.Get_CorrectedVertex_Cut(mom,"loP_top_std")));
             break;
 
           // test high momentum cut
           case {(mom>=this.Plimits[1]) && (mom<=this.Plimits[2])}:
-            this.IDfcn_proton["highMomLower"].eachWithIndex { val, index ->
+            this.IDfcn_proton["hiP_bot_std"].eachWithIndex { val, index ->
                 low = low + val*Math.pow(mom,index);
             }
-            this.IDfcn_proton["highMomUpper"].eachWithIndex { val, index ->
+            this.IDfcn_proton["hiP_top_std"].eachWithIndex { val, index ->
                 hi = hi + val*Math.pow(mom,index);
             }
             ret = ((corrTOF>=low) && (corrTOF<=hi));
-//            ret = ((corrTOF>=this.&Get_CorrectedVertex_Cut(mom,"highMomLower")) && (corrTOF<=this.&Get_CorrectedVertex_Cut(mom,"highMomUpper")));
+//            ret = ((corrTOF>=this.&Get_CorrectedVertex_Cut(mom,"hiP_bot_std")) && (corrTOF<=this.&Get_CorrectedVertex_Cut(mom,"hiP_top_std")));
             break;
 
           // set the cut to false if not in the momentum range
@@ -91,5 +142,38 @@ class clas6Proton {
       boolean ret = false;
       if(mom >= this.Plimits[0]) ret = true;
       return ret;
+    }
+
+    //
+    // Function of the proton ID momentum cuts
+    //       keyName - name for the parameter set ("std","1_0","1_5","2_0",etc)
+    //       MomRange - set the momentum range (true = low, false = high)
+    //       CutBotTop - select the bottom or top cut (values = "bot", "top")
+    //
+    static F1D fcnMomentumCuts(String CutLabel, String MomRange, String CutBotTop){
+      String fcn;
+      String Prange;
+      double loLimit, hiLimit;
+
+      if(MomRange.matches("lo")){
+        // 9th order polynomial function for low momentum range
+        fcn = "[a]+[b]*x+[c]*x*x+[d]*x*x*x+[e]*x*x*x*x+[f]*x*x*x*x*x+[g]*x*x*x*x*x*x+[h]*x*x*x*x*x*x*x+[i]*x*x*x*x*x*x*x*x+[j]*x*x*x*x*x*x*x*x*x";
+        loLimit = this.Plimits[0];
+        hiLimit = this.Plimits[1];
+      }else if(MomRange.matches("lo")){
+        // 3rd order polynomial function for high momentum range
+        fcn = "[a]+[b]*x+[c]*x*x+[d]*x*x*x";
+        loLimit = this.Plimits[1];
+        hiLimit = this.Plimits[2];
+      }else{
+        println "clas6Proton::fcnMomentumCuts - no match with MomRange " + MomRange;
+      }
+
+      String keyName = MomRange + "P_" + CutBotTop + "_" + CutLabel;
+
+      F1D tempFcn = new F1D("tempFcn",fcn,loLimit,hiLimit);
+      double[] tempParam = (double[])this.Get_ProtonCutPars(keyName);
+      tempFcn.setParameters(tempParam);
+      return tempFcn;
     }
 }
