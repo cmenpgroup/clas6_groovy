@@ -13,6 +13,7 @@ public class clas6Proton {
     }
 
     static def Plimits = [0.2,0.8,3.0];
+
 //  Parameters from Or Hen
     static def lowP_lower = [-26.8257,153.155,-408.979,673.476,-790.433,708.255,-474.843,217.295,-58.6269,6.90981];
     static def lowP_upper = [120.251,-1168.19,5237.42,-13638.1,22325.3,-23649.6,16177.8,-6894.16,1663.4,-173.474];
@@ -56,77 +57,58 @@ public class clas6Proton {
 
     public void SetCuts(ProtonIDCuts cuts) {this.mycuts = cuts;}
 
-    public String GetCutName(){
-        println "clas6Proton::GetCutName " + this.mycuts;
-        String ret;
-        this.mycuts = ProtonIDCuts.STD;
-        println "clas6Proton::GetCutName " + this.mycuts;        
+    public def GetCutName(){
+//        println "clas6Proton::GetCutName " + this.mycuts;
+        def ret = [];
         switch(this.mycuts){
-          case STD:
-            ret = "loP_bot_std";
+          case "STD":
+            ret.add("loP_bot_std");
+            ret.add("loP_top_std");
+            ret.add("hiP_bot_std");
+            ret.add("hiP_top_std");
             break;
-          case SIGMA_1_0:
-            ret = "loP_bot_1_0";
+          case "SIGMA_1_0":
+            ret.add("loP_bot_1_0");
+            ret.add("loP_top_1_0");
+            ret.add("hiP_bot_1_0");
+            ret.add("hiP_top_1_0");
             break;
-          case SIGMA_1_5:
-            ret = "loP_bot_1_5";
+          case "SIGMA_1_5":
+            ret.add("loP_bot_1_5");
+            ret.add("loP_top_1_5");
+            ret.add("hiP_bot_1_5");
+            ret.add("hiP_top_1_5");
             break;
-          case SIGMA_2_0:
-            ret = "loP_bot_2_0";
+          case "SIGMA_2_0":
+            ret.add("loP_bot_2_0");
+            ret.add("loP_top_2_0");
+            ret.add("hiP_bot_2_0");
+            ret.add("hiP_top_2_0");
             break;
-          case SIGMA_2_5:
-            ret = "loP_bot_2_5";
+          case "SIGMA_2_5":
+            ret.add("loP_bot_2_5");
+            ret.add("loP_top_2_5");
+            ret.add("hiP_bot_2_5");
+            ret.add("hiP_top_2_5");
             break;
-          case SIGMA_3_0:
-            ret = "loP_bot_3_0";
+          case "SIGMA_3_0":
+            ret.add("loP_bot_3_0");
+            ret.add("loP_top_3_0");
+            ret.add("hiP_bot_3_0");
+            ret.add("hiP_top_3_0");
             break;
           default:
-            ret = "loP_bot_std";
+            ret.add("loP_bot_std");
+            ret.add("loP_top_std");
+            ret.add("hiP_bot_std");
+            ret.add("hiP_top_std");
             break;
         }
         return ret;
     }
 
-    static boolean  Get_ProtonTOF_Cut(double mom, double corrTOF) {
-        double low = 0.0;
-        double hi = 0.0;
-        boolean ret = false;
-
-        switch(mom){
-          // test low momentum cut
-          case {(mom>=this.Plimits[0]) && (mom<this.Plimits[1])}:
-            this.IDfcn_proton["loP_bot_std"].eachWithIndex { val, index ->
-                low = low + val*Math.pow(mom,index);
-            }
-            this.IDfcn_proton["loP_top_std"].eachWithIndex { val, index ->
-                hi = hi + val*Math.pow(mom,index);
-            }
-            ret = ((corrTOF>=low) && (corrTOF<=hi));
-//            ret = ((corrTOF>=this.Get_CorrectedVertex_Cut(mom,"loP_bot_std")) && (corrTOF<=this.Get_CorrectedVertex_Cut(mom,"loP_top_std")));
-            break;
-
-          // test high momentum cut
-          case {(mom>=this.Plimits[1]) && (mom<=this.Plimits[2])}:
-            this.IDfcn_proton["hiP_bot_std"].eachWithIndex { val, index ->
-                low = low + val*Math.pow(mom,index);
-            }
-            this.IDfcn_proton["hiP_top_std"].eachWithIndex { val, index ->
-                hi = hi + val*Math.pow(mom,index);
-            }
-            ret = ((corrTOF>=low) && (corrTOF<=hi));
-//            ret = ((corrTOF>=this.&Get_CorrectedVertex_Cut(mom,"hiP_bot_std")) && (corrTOF<=this.&Get_CorrectedVertex_Cut(mom,"hiP_top_std")));
-            break;
-
-          // set the cut to false if not in the momentum range
-          default:
-            ret = false;
-            break;
-        }
-        return ret;
-    }
-
-    static double Get_CorrectedVertexTime_Cut(double mom, String keyName) {
-      double ret = -99.0;
+    public double Get_CorrectedVertexTime_Cut(double mom, String keyName) {
+      double ret = 0.0;
 
       this.IDfcn_proton[keyName].eachWithIndex { val, index ->
         ret = ret + val*Math.pow(mom,index);
@@ -134,11 +116,36 @@ public class clas6Proton {
       return ret;
     }
 
-    static List Get_ProtonCutPars(String keyName) {
+    public boolean  Get_ProtonTOF_Cut(double mom, double corrTOF) {
+        double lo, hi;
+
+        switch(mom){
+          // test low momentum cut
+          case {(mom>=this.Plimits[0]) && (mom<this.Plimits[1])}:
+            lo = this.Get_CorrectedVertexTime_Cut(mom,this.GetCutName().get(0));
+            hi = this.Get_CorrectedVertexTime_Cut(mom,this.GetCutName().get(1));
+            break;
+
+          // test high momentum cut
+          case {(mom>=this.Plimits[1]) && (mom<=this.Plimits[2])}:
+            lo = this.Get_CorrectedVertexTime_Cut(mom,this.GetCutName().get(2));
+            hi = this.Get_CorrectedVertexTime_Cut(mom,this.GetCutName().get(3));
+            break;
+
+          // set the cut to false if not in the momentum range
+          default:
+            lo = 99.0;
+            hi = -99.0;
+            break;
+        }
+        return ((corrTOF>=lo) && (corrTOF<=hi));
+    }
+
+    public List Get_ProtonCutPars(String keyName) {
         return this.IDfcn_proton[keyName];
     }
 
-    static boolean LowMomentumCut(double mom){
+    public boolean LowMomentumCut(double mom){
       boolean ret = false;
       if(mom >= this.Plimits[0]) ret = true;
       return ret;
@@ -160,7 +167,7 @@ public class clas6Proton {
         fcn = "[a]+[b]*x+[c]*x*x+[d]*x*x*x+[e]*x*x*x*x+[f]*x*x*x*x*x+[g]*x*x*x*x*x*x+[h]*x*x*x*x*x*x*x+[i]*x*x*x*x*x*x*x*x+[j]*x*x*x*x*x*x*x*x*x";
         loLimit = this.Plimits[0];
         hiLimit = this.Plimits[1];
-      }else if(MomRange.matches("lo")){
+      }else if(MomRange.matches("hi")){
         // 3rd order polynomial function for high momentum range
         fcn = "[a]+[b]*x+[c]*x*x+[d]*x*x*x";
         loLimit = this.Plimits[1];
@@ -172,7 +179,7 @@ public class clas6Proton {
       String keyName = MomRange + "P_" + CutBotTop + "_" + CutLabel;
 
       F1D tempFcn = new F1D("tempFcn",fcn,loLimit,hiLimit);
-      double[] tempParam = (double[])this.Get_ProtonCutPars(keyName);
+      double[] tempParam = (double[])this.IDfcn_proton[keyName];
       tempFcn.setParameters(tempParam);
       return tempFcn;
     }

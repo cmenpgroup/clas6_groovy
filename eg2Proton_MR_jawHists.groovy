@@ -18,6 +18,7 @@ def cli = new CliBuilder(usage:'eg2Proton_MR_jawhists.groovy [options] infile1 i
 cli.h(longOpt:'help', 'Print this message.')
 cli.o(longOpt:'output', args:1, argName:'Histogram output file', type: String, 'Output file name')
 cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
+cli.g(longOpt:'graph', 'Graph monitoring histograms');
 
 def options = cli.parse(args);
 if (!options) return;
@@ -28,6 +29,9 @@ if(options.o) outFile = options.o;
 
 String userTgt = "C";
 if(options.s) userTgt = options.s;
+
+boolean bGraph = false;
+if(options.g) bGraph = true;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -73,19 +77,23 @@ DirLabel.each {nDir ->
 
 Var.eachWithIndex{nVar, iVar->
   String canName = "c" + iVar;
-  can[iVar] = new TCanvas(canName,1200,600);
-  can[iVar].divide(3,1);
+  if(bGraph){
+    can[iVar] = new TCanvas(canName,1200,600);
+    can[iVar].divide(3,1);
+  }
   DirLabel.eachWithIndex{nDir, iDir->
     outDir.cd(nDir);
-    can[iVar].cd(iDir);
-    can[iVar].getPad().setTitleFontSize(c_title_size);
+    if(bGraph){
+      can[iVar].cd(iDir);
+      can[iVar].getPad().setTitleFontSize(c_title_size);
+    }
     if(iDir<2){
       hname = "hYlds_" + TgtLabel[iDir] + "_" + nVar;
       h1_nProton[iVar][iDir]= dir.getObject("jaw/",jawHist[iDir][iVar]);
       h1_nProton[iVar][iDir].setName(hname);
       h1_nProton[iVar][iDir].setTitleX(xLabel[iVar]);
       h1_nProton[iVar][iDir].setTitleY("Counts");
-      can[iVar].draw(h1_nProton[iVar][iDir]);
+      if(bGraph) can[iVar].draw(h1_nProton[iVar][iDir]);
       outDir.addDataSet(h1_nProton[iVar][iDir]); // add to the histogram file
     }else{
       h1_mrProton[iVar] = H1F.divide(h1_nProton[iVar][1],h1_nProton[iVar][0]);
@@ -99,10 +107,10 @@ Var.eachWithIndex{nVar, iVar->
       gr_mrProton[iVar].setMarkerColor(3);
       gr_mrProton[iVar].setLineColor(3);
       gr_mrProton[iVar].setMarkerSize(3);
-      can[iVar].draw(gr_mrProton[iVar]);
+      if(bGraph) can[iVar].draw(gr_mrProton[iVar]);
       outDir.addDataSet(gr_mrProton[iVar]); // add to the histogram file
     }
-    outDir.cd();    
+    outDir.cd();
   }
 }
 

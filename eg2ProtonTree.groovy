@@ -128,6 +128,7 @@ cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event pr
 cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name');
 cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)');
 cli.g(longOpt:'graph', 'Graph monitoring histograms');
+cli.P(longOpt:'protonIDcut', args:1, argName:'cut index', type: int, 'Proton ID Cut index (  def=0)')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -148,6 +149,20 @@ myRK.setSolidTarget(userTgt);
 
 boolean bGraph = false;
 if(options.g) bGraph = true;
+
+def iCut = 0;
+if(options.P){
+  iCut = options.P;
+  if(iCut<0 || iCut>=clas6Proton.ProtonIDCuts.values().size()){
+    int maxIndex = clas6Proton.ProtonIDCuts.values().size()-1;
+    println "Proton ID Cut Index must be between 0 and " + maxIndex;
+    cli.usage();
+    return;
+  }
+}
+
+myProton.SetCuts(clas6Proton.ProtonIDCuts.values()[iCut]);
+println myProton.GetCutName();
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){

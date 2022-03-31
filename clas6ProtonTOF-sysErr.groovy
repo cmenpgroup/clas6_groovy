@@ -16,8 +16,6 @@ import groovy.cli.commons.CliBuilder;
 import eg2Cuts.clas6Proton;
 clas6Proton myProton = new clas6Proton(); // create the proton object
 
-myProton.SetCuts(clas6Proton.ProtonIDCuts.STD);
-
 GStyle.getAxisAttributesX().setTitleFontSize(32);
 GStyle.getAxisAttributesY().setTitleFontSize(32);
 GStyle.getAxisAttributesX().setLabelFontSize(24);
@@ -30,6 +28,7 @@ def cli = new CliBuilder(usage:'clas6ProtonTOF-sysErr.groovy [options] infile1 i
 cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
+cli.P(longOpt:'protonIDcut', args:1, argName:'cut index', type: int, 'Proton ID Cut index')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -40,6 +39,20 @@ if(options.c) printCounter = options.c;
 
 def maxEvents = 0;
 if(options.M) maxEvents = options.M;
+
+def iCut = 0;
+if(options.P){
+  iCut = options.P;
+  if(iCut<0 || iCut>=clas6Proton.ProtonIDCuts.values().size()){
+    int maxIndex = clas6Proton.ProtonIDCuts.values().size()-1;
+    println "Proton ID Cut Index must be between 0 and " + maxIndex;
+    cli.usage();
+    return;
+  }
+}
+
+myProton.SetCuts(clas6Proton.ProtonIDCuts.values()[iCut]);
+println myProton.GetCutName();
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -136,15 +149,13 @@ while(reader.hasNext()){   // Loop over all events
 }
 System.out.println("processed (total) = " + counterFile);
 
-println myProton.GetCutName();
-/*
 TCanvas c1 = new TCanvas("c1",600,600);
 c1.getPad().setTitleFontSize(32);
 c1.getPad().getAxisZ().setLog(true);
 c1.draw(h2_dTOF_VS_P);
 
-//String[] CutLabel = ["std","1_0","1_5","2_0","2_5","3_0"];
-String[] CutLabel = ["std","1_5","3_0"];
+String[] CutLabel = ["std","1_0","1_5","2_0","2_5","3_0"];
+//String[] CutLabel = ["std","1_5","3_0"];
 String[] CutType = ["bot","top"];
 String[] MomType = ["lo","hi"];
 F1D[][][] fcnCuts = new F1D[CutLabel.size()][MomType.size()][CutType.size()];
@@ -166,8 +177,8 @@ CutLabel.eachWithIndex { fCutLabel,iCutLabel->
   }
   canCount++;
 }
-*/
-//TCanvas c2 = new TCanvas("c2",600,600);
-//c2.getPad().setTitleFontSize(32);
-//c2.getPad().getAxisZ().setLog(true);
-//c2.draw(h2_dTOF_VS_Pcut);
+
+TCanvas c2 = new TCanvas("c2",600,600);
+c2.getPad().setTitleFontSize(32);
+c2.getPad().getAxisZ().setLog(true);
+c2.draw(h2_dTOF_VS_Pcut);

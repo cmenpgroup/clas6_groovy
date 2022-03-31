@@ -28,6 +28,7 @@ cli.h(longOpt:'help', 'Print this message.')
 cli.o(longOpt:'output', args:1, argName:'Histogram output file', type: String, 'Output file name')
 cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
 cli.p(longOpt:'path', args:1, argName:'Acceptance Path', type: String, 'Acceptance Text Files Path')
+cli.g(longOpt:'graph', 'Graph monitoring histograms');
 
 def options = cli.parse(args);
 if (!options) return;
@@ -41,6 +42,9 @@ if(options.p) pathName = options.p;
 
 String userTgt = "C";
 if(options.s) userTgt = options.s;
+
+boolean bGraph = false;
+if(options.g) bGraph = true;
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -119,7 +123,7 @@ Var.eachWithIndex { nVar, iVar->
             ytemp = normCorr[indexTgt]*normCorr[indexTgt]/y;
           }
         }else{
-          ytemp = 0.0;  
+          ytemp = 0.0;
         }
         gr_acc.addPoint(x,ytemp,0.0,err);
 //        gr_acc.addPoint(x,y,0.0,err);
@@ -164,23 +168,15 @@ Var.eachWithIndex { nVar, iVar->
 
     dir.mkdir(nVar);
     dir.cd(nVar);
-    String cname = "can" + iVar;
-    can[iVar] = new TCanvas(cname,1000,500);
-    can[iVar].divide(2,1);
-    can[iVar].cd(0);
-    can[iVar].getPad().setTitleFontSize(c1_title_size);
+
     gr_acc.setTitleX(xLabel[iVar]);
     gr_acc.setTitleY("Acceptance Ratio");
     gr_acc.setMarkerColor(2);
     gr_acc.setLineColor(2);
     gr_acc.setMarkerSize(5);
-    can[iVar].draw(gr_acc);
     dir.addDataSet(gr_acc); // add to the histogram file
 
-    can[iVar].cd(1);
-    can[iVar].getPad().setTitleFontSize(c1_title_size);
     gr_mrProton[iVar].setMarkerSize(5);
-    can[iVar].draw(gr_mrProton[iVar]);
     dir.addDataSet(gr_mrProton[iVar]); // add to the histogram file
 
     gr_mrCorr.setTitleX(xLabel[iVar]);
@@ -188,9 +184,22 @@ Var.eachWithIndex { nVar, iVar->
     gr_mrCorr.setMarkerColor(4);
     gr_mrCorr.setLineColor(4);
     gr_mrCorr.setMarkerSize(5);
-    can[iVar].draw(gr_mrCorr,"same");
     dir.addDataSet(gr_mrCorr); // add to the histogram file
 
+    if(bGraph){
+      String cname = "can" + iVar;
+      can[iVar] = new TCanvas(cname,1000,500);
+      can[iVar].divide(2,1);
+      can[iVar].cd(0);
+      can[iVar].getPad().setTitleFontSize(c1_title_size);
+      can[iVar].draw(gr_acc);
+
+      can[iVar].cd(1);
+      can[iVar].getPad().setTitleFontSize(c1_title_size);
+      can[iVar].draw(gr_mrProton[iVar]);
+      can[iVar].draw(gr_mrCorr,"same");
+    }
+    
     dir.cd(); // return to the top directory
   }
 }

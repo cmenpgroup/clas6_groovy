@@ -323,6 +323,7 @@ cli.h(longOpt:'help', 'Print this message.')
 cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events')
 cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter')
 cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
+cli.P(longOpt:'protonIDcut', args:1, argName:'cut index', type: int, 'Proton ID Cut index')
 
 def options = cli.parse(args);
 if (!options) return;
@@ -336,6 +337,17 @@ if(options.M) maxEvents = options.M;
 
 String solidTgt = "C";
 if(options.s) solidTgt = options.s;
+
+def iCut = 0;
+if(options.P){
+  iCut = options.P;
+  if(iCut<0 || iCut>=clas6Proton.ProtonIDCuts.values().size()){
+    int maxIndex = clas6Proton.ProtonIDCuts.values().size()-1;
+    println "Proton ID Cut Index must be between 0 and " + maxIndex;
+    cli.usage();
+    return;
+  }
+}
 
 def extraArguments = options.arguments()
 if (extraArguments.isEmpty()){
@@ -839,7 +851,7 @@ c8.getPad().getAxisZ().setLog(true);
 c8.draw(h2_dTOF_VS_P);
 
 F1D f1l = new F1D("f1l","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
-double[] highPl = (double[])myProton.Get_ProtonCutPars("highMomLower");
+double[] highPl = (double[])myProton.Get_ProtonCutPars("hiP_bot_std");
 f1l.setParameters(highPl);
 f1l.setLineWidth(3);
 f1l.setLineStyle(1);
@@ -847,7 +859,7 @@ f1l.setOptStat(0);
 c8.draw(f1l,"same");
 
 F1D f1u = new F1D("f1u","[a]+[b]*x+[c]*x*x+[d]*x*x*x", 0.8, 3.0);
-double[] highPu = (double[])myProton.Get_ProtonCutPars("highMomUpper");
+double[] highPu = (double[])myProton.Get_ProtonCutPars("hiP_top_std");
 f1u.setParameters(highPu);
 f1u.setLineWidth(3);
 f1u.setLineStyle(1);
@@ -856,7 +868,7 @@ c8.draw(f1u,"same");
 
 String fcn9 = "[a]+[b]*x+[c]*x*x+[d]*x*x*x+[e]*x*x*x*x+[f]*x*x*x*x*x+[g]*x*x*x*x*x*x+[h]*x*x*x*x*x*x*x+[i]*x*x*x*x*x*x*x*x+[j]*x*x*x*x*x*x*x*x*x"
 F1D f2l = new F1D("f2l",fcn9, 0.2, 0.8);
-double[] lowPl = (double[])myProton.Get_ProtonCutPars("lowMomLower");
+double[] lowPl = (double[])myProton.Get_ProtonCutPars("loP_bot_std");
 f2l.setParameters(lowPl);
 //f2l.setLineColor(34);
 f2l.setLineWidth(3);
@@ -865,7 +877,7 @@ f2l.setOptStat(0);
 c8.draw(f2l,"same");
 
 F1D f2u = new F1D("f2u",fcn9, 0.2, 0.8);
-double[] lowPu = (double[])myProton.Get_ProtonCutPars("lowMomUpper");
+double[] lowPu = (double[])myProton.Get_ProtonCutPars("loP_top_std");
 f2u.setParameters(lowPu);
 //f2u.setLineColor(34);
 f2u.setLineWidth(3);
