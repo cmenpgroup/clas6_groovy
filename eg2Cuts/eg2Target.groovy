@@ -1,6 +1,7 @@
 package eg2Cuts
 
-import org.jlab.jnp.physics.*;
+//---- imports for PHYSICS library
+import org.jlab.clas.physics.*;
 
 class eg2Target {
 
