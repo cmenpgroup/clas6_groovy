@@ -14,10 +14,19 @@ class HistInfo {
   String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z_L_C","z_L_C","#phi_P_Q (deg.)"];
   String[] Var = ["q2","nu","zh","pT2","zLC_lo","zLC_hi","phiPQ"];
   String[] VarClasTool = ["Q2","Nu","Zh","Pt2","Zlc_lo","Zlc_hi","PhiPQ"];
-  int[] nbins = [48,50,41,30,17,16,60];
-  double[] xlo = [Q2_DIS,2.2,0.225,0.0,0.13,0.3,-180.0];
+  int[] nbins = [48,49,40,30,16,16,60];
+  double[] xlo = [Q2_DIS,2.24,0.25,0.0,0.14,0.3,-180.0];
   double[] xhi = [3.976,4.2,1.25,2.0,0.3,1.02,180.0];
 
+//  int[] nbins = [48,50,41,30,17,16,60];
+//  double[] xlo = [Q2_DIS,2.2,0.225,0.0,0.13,0.3,-180.0];
+//  double[] xhi = [3.976,4.2,1.25,2.0,0.3,1.02,180.0];
+
+  String[] sigmaLabel = ["1.0","1.5","2.0","2.5","3.0"]; // sigma for proton ID cut
+
+  List<String> getSigmaLabel(){
+    return sigmaLabel;
+  }
   List<String> getSolidTgtLabel(){
     return solidTgt;
   }

@@ -31,10 +31,16 @@ String outFile = "acc_ratio_hists_MR2pT2.hipo";
 p.addOption("-o", outFile, "Output file name");
 int iBinning = 1;
 p.addOption("-b", Integer.toString(iBinning), "Set the binning of the histograms");
+String userSigmaCut = "2.0";
+p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (1.0, 1.5, 2.0, 2.5, 3.0)");
+int bGraph = 1;
+p.addOption("-g", Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
 
 p.parse(args);
 outFile = p.getOption("-o").stringValue();
 iBinning = p.getOption("-b").intValue();
+userSigmaCut = p.getOption("-c").stringValue();
+bGraph = p.getOption("-g").intValue();
 
 String pathName;
 if(p.getInputList().size()==1){
@@ -64,23 +70,15 @@ solidTgt.add("D"); // add the D target to the List
 println solidTgt;
 
 TDirectory dir = new TDirectory();
-int c1_title_size = 22;
-TCanvas[] can = new TCanvas[zhCuts.size()];
 
 H1F[][][] h1_acc = new H1F[zhCuts.size()][accType.size()][solidTgt.size()];
 GraphErrors[][] gr_acc = new GraphErrors[zhCuts.size()][solidTgt.size()];
 GraphErrors[][] gr_rat = new GraphErrors[zhCuts.size()][solidTgt.size()];
 
-int canCount = 0;
-
 zhCuts.eachWithIndex { nZh, iZh->
-  String cname = "can" + iZh;
-  can[iZh] = new TCanvas(cname,1200,900);
-  can[iZh].divide(4,4);
   dir.cd();
   dir.mkdir(nZh);
   dir.cd(nZh);
-  canCount = 0;
   solidTgt.eachWithIndex {nTgt, iTgt->
     accType.eachWithIndex {nAcc, iAcc->
       String hname = nAcc + nTgt + "_MR2pT2_" + iZh;
@@ -89,7 +87,7 @@ zhCuts.eachWithIndex { nZh, iZh->
       if(nAcc!="acc"){
         h1_acc[iZh][iAcc][iTgt] = new H1F(hname,xLabel,yLabel[iAcc],nbins[iZh],xlo[iZh],xhi[iZh]);
         h1_acc[iZh][iAcc][iTgt].setTitle(htitle);
-        String path = pathName + "/" + nTgt + "/2d/";
+        String path = pathName + "/" + nTgt + "/2d/sig" + userSigmaCut + "/";
         String accFile = path + "pruned" + nTgt + "_MR2pT2_" + iZh + "." + nAcc;
         println "Analyzing " + accFile;
         new File(accFile).eachLine { line ->
@@ -116,31 +114,48 @@ zhCuts.eachWithIndex { nZh, iZh->
         gr_acc[iZh][iTgt].setTitle(htitle);
         gr_acc[iZh][iTgt].setTitleX(xLabel);
         gr_acc[iZh][iTgt].setTitleY(yLabel[iAcc]);
-      }
-      can[iZh].cd(canCount);
-      can[iZh].getPad().setTitleFontSize(c1_title_size);
-      if(nAcc!="acc"){
-        can[iZh].draw(h1_acc[iZh][iAcc][iTgt]);
-      }else{
-        can[iZh].draw(gr_acc[iZh][iTgt]);
         dir.addDataSet(gr_acc[iZh][iTgt]); // add graph to the file
       }
       dir.addDataSet(h1_acc[iZh][iAcc][iTgt]); // add histogram to the file
-      canCount++;
     }
-    canCount++; // skip the pad that will be for the ratio graph
   }
   solidTgt.eachWithIndex {nTgt, iTgt->
-        gr_rat[iZh][iTgt] = new GraphErrors();
-        gr_rat[iZh][iTgt] = gr_acc[iZh][iTgt].divide(gr_acc[iZh][3]);
-        gr_rat[iZh][iTgt].setName("gr_rat" + nTgt + "_" + iZh);
-        gr_rat[iZh][iTgt].setTitle("eg2 - " + nTgt + "/D");
-        gr_rat[iZh][iTgt].setTitleX(xLabel);
-        gr_rat[iZh][iTgt].setTitleY("Ratio");
-        can[iZh].cd(3+4*iTgt);
+    gr_rat[iZh][iTgt] = new GraphErrors();
+    gr_rat[iZh][iTgt] = gr_acc[iZh][iTgt].divide(gr_acc[iZh][3]);
+    gr_rat[iZh][iTgt].setName("gr_rat" + nTgt + "_" + iZh);
+    gr_rat[iZh][iTgt].setTitle("eg2 - " + nTgt + "/D");
+    gr_rat[iZh][iTgt].setTitleX(xLabel);
+    gr_rat[iZh][iTgt].setTitleY("Ratio");
+    dir.addDataSet(gr_rat[iZh][iTgt]); // add ratio graph to the file
+  }
+}
+
+if(bGraph){
+  int canCount = 0;
+  int c1_title_size = 22;
+  TCanvas[] can = new TCanvas[zhCuts.size()];
+
+  zhCuts.eachWithIndex { nZh, iZh->
+    String cname = "can" + iZh;
+    can[iZh] = new TCanvas(cname,1200,900);
+    can[iZh].divide(4,4);
+    canCount = 0;
+    solidTgt.eachWithIndex {nTgt, iTgt->
+      accType.eachWithIndex {nAcc, iAcc->
+        can[iZh].cd(canCount);
         can[iZh].getPad().setTitleFontSize(c1_title_size);
-        can[iZh].draw(gr_rat[iZh][iTgt]);
-        dir.addDataSet(gr_rat[iZh][iTgt]); // add ratio graph to the file
+        if(nAcc!="acc"){
+          can[iZh].draw(h1_acc[iZh][iAcc][iTgt]);
+        }else{
+          can[iZh].draw(gr_acc[iZh][iTgt]);
+        }
+        canCount++;
+      }
+      can[iZh].cd(canCount);
+      can[iZh].getPad().setTitleFontSize(c1_title_size);
+      can[iZh].draw(gr_rat[iZh][iTgt]);
+      canCount++;            
+    }
   }
 }
 

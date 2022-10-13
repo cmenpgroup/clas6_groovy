@@ -31,10 +31,16 @@ String outFile = "acc_ratio_hists_MR3zh.hipo";
 p.addOption("-o", outFile, "Output file name");
 int iBinning = 1;
 p.addOption("-b", Integer.toString(iBinning), "Set the binning of the histograms");
+String userSigmaCut = "2.0";
+p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (1.0, 1.5, 2.0, 2.5, 3.0)");
+int bGraph = 1;
+p.addOption("-g", Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
 
 p.parse(args);
 outFile = p.getOption("-o").stringValue();
 iBinning = p.getOption("-b").intValue();
+userSigmaCut = p.getOption("-c").stringValue();
+bGraph = p.getOption("-g").intValue();
 
 String pathName;
 if(p.getInputList().size()==1){
@@ -66,26 +72,21 @@ solidTgt.add("D"); // add the D target to the List
 println solidTgt;
 
 TDirectory dir = new TDirectory();
-int c1_title_size = 22;
-TCanvas[][] can = new TCanvas[Q2Cuts.size()][nuCuts.size()];
 
 H1F[][][] h1_acc = new H1F[Q2Cuts.size()*nuCuts.size()][accType.size()][solidTgt.size()];
 GraphErrors[][] gr_acc = new GraphErrors[Q2Cuts.size()*nuCuts.size()][solidTgt.size()];
 GraphErrors[][] gr_rat = new GraphErrors[Q2Cuts.size()*nuCuts.size()][solidTgt.size()];
 
-int canCount = 0;
 int hNum;
 
 Q2Cuts.eachWithIndex { nQ2, iQ2->
   nuCuts.eachWithIndex { nNu, iNu->
     hNum = iQ2*Q2Cuts.size() + iNu;
     println "hNum " + hNum + " " + iQ2 + " " + iNu;
-    String cname = "c" + iQ2 + iNu;
-    can[iQ2][iNu] = new TCanvas(cname,1200,900);
-    can[iQ2][iNu].divide(4,4);
+    String dirname = "Qsq" + iQ2 + "_nu" + iNu;
     dir.cd();
-    dir.mkdir(cname);
-    dir.cd(cname);
+    dir.mkdir(dirname);
+    dir.cd(dirname);
     canCount = 0;
     solidTgt.eachWithIndex {nTgt, iTgt->
       accType.eachWithIndex {nAcc, iAcc->
@@ -95,7 +96,7 @@ Q2Cuts.eachWithIndex { nQ2, iQ2->
         if(nAcc!="acc"){
           h1_acc[hNum][iAcc][iTgt] = new H1F(hname,xLabel,yLabel[iAcc],nbins[iQ2][iNu],xlo[iQ2][iNu],xhi[iQ2][iNu]);
           h1_acc[hNum][iAcc][iTgt].setTitle(htitle);
-          String path = pathName + "/" + nTgt + "/3d/";
+          String path = pathName + "/" + nTgt + "/3d/sig" + userSigmaCut + "/";
           String accFile = path + "pruned" + nTgt + "_MR3zh_" +  iQ2 + iNu + "." + nAcc;
           println "Analyzing " + accFile;
           new File(accFile).eachLine { line ->
@@ -122,19 +123,10 @@ Q2Cuts.eachWithIndex { nQ2, iQ2->
           gr_acc[hNum][iTgt].setTitle(htitle);
           gr_acc[hNum][iTgt].setTitleX(xLabel);
           gr_acc[hNum][iTgt].setTitleY(yLabel[iAcc]);
-        }
-        can[iQ2][iNu].cd(canCount);
-        can[iQ2][iNu].getPad().setTitleFontSize(c1_title_size);
-        if(nAcc!="acc"){
-          can[iQ2][iNu].draw(h1_acc[hNum][iAcc][iTgt]);
-        }else{
-          can[iQ2][iNu].draw(gr_acc[hNum][iTgt]);
           dir.addDataSet(gr_acc[hNum][iTgt]); // add graph to the file
         }
         dir.addDataSet(h1_acc[hNum][iAcc][iTgt]); // add histogram to the file
-        canCount++;
       }
-      canCount++; // skip the pad that will be for the ratio graph
     }
     solidTgt.eachWithIndex {nTgt, iTgt->
       gr_rat[hNum][iTgt] = new GraphErrors();
@@ -143,10 +135,39 @@ Q2Cuts.eachWithIndex { nQ2, iQ2->
       gr_rat[hNum][iTgt].setTitle("eg2 - " + nTgt + "/D");
       gr_rat[hNum][iTgt].setTitleX(xLabel);
       gr_rat[hNum][iTgt].setTitleY("Ratio");
-      can[iQ2][iNu].cd(3+4*iTgt);
-      can[iQ2][iNu].getPad().setTitleFontSize(c1_title_size);
-      can[iQ2][iNu].draw(gr_rat[hNum][iTgt]);
       dir.addDataSet(gr_rat[hNum][iTgt]); // add ratio graph to the file
+    }
+  }
+}
+
+if(bGraph){
+  int canCount = 0;
+  int c1_title_size = 22;
+  TCanvas[][] can = new TCanvas[Q2Cuts.size()][nuCuts.size()];
+
+  Q2Cuts.eachWithIndex { nQ2, iQ2->
+    nuCuts.eachWithIndex { nNu, iNu->
+      hNum = iQ2*Q2Cuts.size() + iNu;
+      String cname = "c" + iQ2 + iNu;
+      can[iQ2][iNu] = new TCanvas(cname,1200,900);
+      can[iQ2][iNu].divide(4,4);
+      canCount = 0;
+      solidTgt.eachWithIndex {nTgt, iTgt->
+        accType.eachWithIndex {nAcc, iAcc->
+          can[iQ2][iNu].cd(canCount);
+          can[iQ2][iNu].getPad().setTitleFontSize(c1_title_size);
+          if(nAcc!="acc"){
+            can[iQ2][iNu].draw(h1_acc[hNum][iAcc][iTgt]);
+          }else{
+            can[iQ2][iNu].draw(gr_acc[hNum][iTgt]);
+          }
+          canCount++;
+        }
+        can[iQ2][iNu].cd(canCount);
+        can[iQ2][iNu].getPad().setTitleFontSize(c1_title_size);
+        can[iQ2][iNu].draw(gr_rat[hNum][iTgt]);
+        canCount++;
+      }
     }
   }
 }
