@@ -1,8 +1,25 @@
 package eg2Cuts
 
-import org.jlab.jnp.physics.*;
+import org.jlab.clas.physics.*;
+//import org.jlab.jnp.physics.*;
 
 class clas6EC {
+
+  static double ECIN_MIN = 0.06;
+  static double EC_SAMPLEFRAC = 0.27;
+  static double ELECTRON_MOM = 0.64;
+
+  double Get_ECIN_MIN(){
+    return this.ECIN_MIN;
+  }
+
+  double Get_EC_SAMPLEFRAC(){
+    return this.EC_SAMPLEFRAC;
+  }
+
+  double Get_ELECTRON_MOM(){
+    return this.ELECTRON_MOM;
+  }
 
   def dt_ECSC = {
     ECtime, SCtime->

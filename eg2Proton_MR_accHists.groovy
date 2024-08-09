@@ -35,12 +35,15 @@ String userSigmaCut = "2.0";
 p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (1.0, 1.5, 2.0, 2.5, 3.0)");
 int bGraph = 1;
 p.addOption("-g",Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
+int allVars = 0;
+p.addOption("-z",Integer.toString(allVars), "Variables (0=short list- q2:nu:zh:pT2:zLC:zLC:phiPQ, 1=full list)");
 
 p.parse(args);
 outFile = p.getOption("-o").stringValue();
 userTgt = p.getOption("-s").stringValue();
 userSigmaCut = p.getOption("-c").stringValue();
 bGraph = p.getOption("-g").intValue();
+allVars = p.getOption("-z").intValue();
 
 String pathName;
 if(p.getInputList().size()==1){
@@ -52,6 +55,7 @@ if(p.getInputList().size()==1){
 }
 
 HistInfo myHI = new HistInfo();
+if(allVars) myHI.createFullList();
 List<String> Var = myHI.getVariables();
 List<String> VarClasTool = myHI.getVariablesClasTool();
 List<String> xLabel = myHI.getXlabel();
@@ -60,7 +64,13 @@ List<String> solidTgt = myHI.getSolidTgtLabel();
 List<Double> xlo = myHI.getXlo();
 List<Double> xhi = myHI.getXhi();
 List<Integer> nbins = myHI.getNbins();
-
+if(allVars){
+  nbins.addAll(myHI.getNbins_kine());
+  xlo.addAll(myHI.getXlo_kine());
+  xhi.addAll(myHI.getXhi_kine());
+}
+println Var;
+println nbins;
 String[] accType = ["gen","rec","acc"];
 String[] yLabel = ["Counts","Counts","Acceptance"];
 
@@ -98,6 +108,7 @@ Var.eachWithIndex { nVar, iVar->
               default: break;
             }
           }
+          if(nVar=="PhiLab" && x>180.0) x -= 360.0;
           h1_acc[iVar][iAcc][iTgt].fill(x,y);
         }
       }else{

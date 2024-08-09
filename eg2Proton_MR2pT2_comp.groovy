@@ -36,7 +36,7 @@ int c1_title_size = 22;
 
 TDirectory[] dir = new TDirectory[solidTgt.size()];
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String fileName = "eg2Proton_MR2pT2_corr_hists_" + nTgt + "_newAcc.hipo";
+  String fileName = "MR2D/eg2Proton_MR2pT2_corr_hists_" + nTgt + "_std.hipo";
   println fileName;
   dir[iTgt] = new TDirectory();
   dir[iTgt].readFile(fileName);

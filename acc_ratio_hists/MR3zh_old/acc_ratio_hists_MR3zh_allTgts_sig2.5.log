@@ -1,0 +1,95 @@
++-------------------------------------------------------------------------
+| COATJAVA LIBRARY DIRECTORY =  /Users/wood5/jlab/clas12-offline-software/coatjava/bin/../lib/clas/
++-------------------------------------------------------------------------
+ 
+ 
+*****************************************
+*    Running COAT-JAVA Groovy Scripts   *
+*    Version : 3a  Release : 2016       *
+*****************************************
+ 
+ 
+Starting YieldsForMR3zh.  The ntuple/tree file has not been loaded.
+[C, Fe, Pb, D]
+hNum 0 0 0
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_00.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_00.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_00.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_00.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_00.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_00.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_00.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_00.rec
+hNum 1 0 1
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_01.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_01.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_01.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_01.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_01.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_01.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_01.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_01.rec
+hNum 2 0 2
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_02.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_02.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_02.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_02.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_02.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_02.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_02.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_02.rec
+hNum 3 1 0
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_10.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_10.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_10.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_10.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_10.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_10.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_10.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_10.rec
+hNum 4 1 1
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_11.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_11.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_11.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_11.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_11.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_11.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_11.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_11.rec
+hNum 5 1 2
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_12.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_12.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_12.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_12.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_12.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_12.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_12.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_12.rec
+hNum 6 2 0
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_20.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_20.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_20.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_20.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_20.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_20.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_20.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_20.rec
+hNum 7 2 1
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_21.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_21.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_21.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_21.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_21.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_21.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_21.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_21.rec
+hNum 8 2 2
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_22.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/C/3d/sig2.5/prunedC_MR3zh_22.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_22.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Fe/3d/sig2.5/prunedFe_MR3zh_22.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_22.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/Pb/3d/sig2.5/prunedPb_MR3zh_22.rec
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_22.gen
+Analyzing /Users/wood5/jlab/clas6/DMS/eg2/proton/Simulations/eg2_proton_sim/plot_acc/D/3d/sig2.5/prunedD_MR3zh_22.rec
+Writer : Last Record => pos = 38704, entries =     1 

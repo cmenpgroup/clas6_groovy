@@ -1,12 +1,18 @@
-import org.jlab.jnp.hipo4.data.Event;
-import org.jlab.jnp.hipo4.data.Bank;
-import org.jlab.jnp.hipo4.io.HipoReader;
-import org.jlab.jnp.physics.*;
-import org.jlab.jnp.pdg.PhysicsConstants;
+import org.jlab.jnp.hipo4.data.*;
+import org.jlab.jnp.hipo4.io.*;
+//import org.jlab.jnp.physics.*;
+//import org.jlab.jnp.pdg.PhysicsConstants;
+import org.jlab.clas.physics.*;
+import org.jlab.clas.pdg.PhysicsConstants;
 
 import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
+import org.jlab.groot.tree.*; // new import for ntuples
+
+import org.jlab.jnp.utils.options.OptionParser;
+
+import eg2Cuts.eg2Target
 
 def FindSector = {
   phi ->
@@ -26,109 +32,196 @@ def FindSector = {
   return sect;
 }
 
-GStyle.getAxisAttributesX().setTitleFontSize(32);
-GStyle.getAxisAttributesY().setTitleFontSize(32);
+long st = System.currentTimeMillis(); // start time
+
+GStyle.getAxisAttributesX().setTitleFontSize(24);
+GStyle.getAxisAttributesY().setTitleFontSize(24);
 GStyle.getAxisAttributesX().setLabelFontSize(24);
 GStyle.getAxisAttributesY().setLabelFontSize(24);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
+eg2Target myTarget = new eg2Target();  // create the eg2 target object
+
+OptionParser p = new OptionParser("eg2Vertex.groovy");
+
+p.addOption("-M", "0", "Max. Events");
+p.addOption("-c", "20000", "Event progress counter");
+p.addOption("-o", "eg2Vertex_Hists.hipo", "output file name");
+
+p.parse(args);
+int maxEvents = p.getOption("-M").intValue();
+int printCounter = p.getOption("-c").intValue();
+String outFile = p.getOption("-o").stringValue();
+
+HipoChain reader = new HipoChain();
+if(p.getInputList().size()){
+  reader.addFiles(p.getInputList());
+}else{
+    System.out.println("*** No input files on command line. ***");
+    p.printUsage();
+    System.exit(0);
+}
+reader.open();
+
+int GREEN = 33;
+int BLUE = 34;
+int YELLOW = 35;
 int sector;
 int counterTotal = 0;
 int counterFile;
 
-Vector3 v3electron = new Vector3(0,0,0);
-LorentzVector electron = new LorentzVector(0,0,0,0);
-
 PhysicsConstants PhyConsts= new PhysicsConstants();
+double LIGHTSPEED = PhyConsts.speedOfLight(); // speed of light in cm/ns
+println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
-//println args.length;
+int num = -1; // particle index
+int MAX_SECTORS = myTarget.Get_MAX_SECTORS();
+String[] part = ["electron","proton","positive"];
+double[] partMass = [PhyConsts.massElectron(),PhyConsts.massProton(),0.0];
+String hTitle = "Experiment: eg2";
+H1F[] h1_Vz = new H1F[part.size()];
+H2F[] h2_Vz_phi = new H2F[part.size()];
+H1F[] h1_Vz_corr = new H1F[part.size()];
+H2F[] h2_Vz_phi_corr = new H2F[part.size()];
+H1F[][] h1_Vz_sec = new H1F[part.size()][MAX_SECTORS];
+H1F[][] h1_Vz_sec_corr = new H1F[part.size()][MAX_SECTORS];
+int nBins_Vz = 500;
+double Vz_Lo = -33.0;
+double Vz_Hi = -20.0;
+int nBins_Phi = 360;
+double Phi_Lo = -180.0;
+double Phi_Hi = 180.0;
 
-H1F h1_Vz = new H1F("h1_Vz",100,-33,-20.0);
-h1_Vz.setTitle("Experiment: eg2");
-h1_Vz.setTitleX("Vertex z (cm)");
-h1_Vz.setTitleY("Counts");
-h1_Vz.setFillColor(44);
+Vector3[] vec3 = new Vector3[part.size()];
+Vector3[] vec3_corr = new Vector3[part.size()];
+LorentzVector[] vec4 = new LorentzVector[part.size()];
 
-H2F h2_Vz_phi = new H2F("h2_Vz_phi",100,-33,-20.0,360,-180.0,180.0);
-h2_Vz_phi.setTitle("Experiment: eg2");
-h2_Vz_phi.setTitleX("Vertex z (cm)");
-h2_Vz_phi.setTitleY("#phi (deg.)");
+part.eachWithIndex { partName, ih->
+  vec3[ih] = new Vector3(0.0,0.0,0.0);
+  vec3_corr[ih] = new Vector3(0.0,0.0,0.0);
+  vec4[ih] = new LorentzVector(0.0,0.0,0.0,0.0);
 
-H1F h1_Vz_corr = new H1F("h1_Vz_corr",100,-33,-20.0);
-h1_Vz_corr.setTitle("Experiment: eg2");
-h1_Vz_corr.setTitleX("Vertex z (cm)");
-h1_Vz_corr.setTitleY("Counts");
-h1_Vz_corr.setFillColor(44);
+  h1_Vz[ih] = new H1F("h1_Vz_"+partName,"Vertex z (cm)","Counts",nBins_Vz,Vz_Lo,Vz_Hi);
+  h1_Vz[ih].setTitle(hTitle);
+  h1_Vz[ih].setFillColor(44);
 
-H2F h2_Vz_phi_corr = new H2F("h2_Vz_phi_corr",100,-33,-20.0,360,-180.0,180.0);
-h2_Vz_phi_corr.setTitle("Experiment: eg2");
-h2_Vz_phi_corr.setTitleX("Vertex z (cm)");
-h2_Vz_phi_corr.setTitleY("#phi (deg.)");
+  h1_Vz_corr[ih] = new H1F("h1_Vz_corr_"+partName,"Vertex z (cm)","Counts",nBins_Vz,Vz_Lo,Vz_Hi);
+  h1_Vz_corr[ih].setTitle(hTitle);
+  h1_Vz_corr[ih].setFillColor(BLUE);
 
-for(int j=0;j<args.length;j++){
-  HipoReader reader = new HipoReader();
-  reader.open(args[j]);
+  h2_Vz_phi[ih] = new H2F("h2_Vz_phi_"+partName,nBins_Vz,Vz_Lo,Vz_Hi,nBins_Phi,Phi_Lo,Phi_Hi);
+  h2_Vz_phi[ih].setTitle("Experiment: eg2");
+  h2_Vz_phi[ih].setTitleX("Vertex z (cm)");
+  h2_Vz_phi[ih].setTitleY("#phi (deg.)");
 
-  Event      event  = new Event();
-  Bank       bank   = new Bank(reader.getSchemaFactory().getSchema("EVENT::particle"));
-  // Loop over all events
-  counterFile = 0;
-  while(reader.hasNext()==true){
-    if(counterFile%25000 == 0) println counterFile;
-    reader.nextEvent(event);
-    event.read(bank);
+  h2_Vz_phi_corr[ih] = new H2F("h2_Vz_phi_corr_"+partName,nBins_Vz,Vz_Lo,Vz_Hi,nBins_Phi,Phi_Lo,Phi_Hi);
+  h2_Vz_phi_corr[ih].setTitle("Experiment: eg2");
+  h2_Vz_phi_corr[ih].setTitleX("Vertex z (cm)");
+  h2_Vz_phi_corr[ih].setTitleY("#phi (deg.)");
 
-    int rows = bank.getRows();
-    for(int i = 0; i < rows; i++){
-      if(bank.getInt("pid",i) == 11){
-        electron.setPxPyPzM(bank.getFloat("px",i), bank.getFloat("py",i), bank.getFloat("pz",i), PhyConsts.massElectron());
-        v3electron.setXYZ(bank.getFloat("vx",i), bank.getFloat("vy",i), bank.getFloat("vz",i));
-        h1_Vz.fill(v3electron.z());
+  for(int i=0; i<MAX_SECTORS; i++){
+    h1_Vz_sec[ih][i] = new H1F("h1_Vz_sec_"+partName+"_"+i,"Vertex z (cm)","Counts",nBins_Vz,Vz_Lo,Vz_Hi);
+    h1_Vz_sec[ih][i].setTitle(hTitle);
 
-        double phi_deg = Math.toDegrees(electron.phi()); // convert to degrees
-        h2_Vz_phi.fill(v3electron.z(),phi_deg);
+    h1_Vz_sec_corr[ih][i] = new H1F("h1_Vz_sec_corr_"+partName+"_"+i,"Vertex z (cm)","Counts",nBins_Vz,Vz_Lo,Vz_Hi);
+    h1_Vz_sec_corr[ih][i].setTitle(hTitle);
+  }
+}
 
-        sector = FindSector(phi_deg);
+Event      event  = new Event();
+Bank       bank   = new Bank(reader.getSchemaFactory().getSchema("EVENT::particle"));
 
-        int phi_new = phi_deg+30.0; // shift by 30 deg
-        if(phi_new<0)phi_new+=360.0; // if negative, shift positive
-        int sect =  Math.floor(phi_new/60.0);
+while(reader.hasNext()) {
+  if(counterFile % printCounter == 0) println counterFile;
+  if(maxEvents!=0 && counterFile >= maxEvents) break;
 
-        Vector3 RotatedVertPos = Vector3.from(v3electron);
-        Vector3 RotatedVertDir = Vector3.from(electron.vect());
-        Vector3 TargetPos = new Vector3(0.043,-0.33,0.0);
+  reader.nextEvent(event);
+  event.read(bank);
 
-        RotatedVertPos.rotateZ(-Math.toRadians(60.0*sect));
-        RotatedVertDir.rotateZ(-Math.toRadians(60.0*sect));
-        TargetPos.rotateZ(-Math.toRadians(60.0*sect));
+  int rows = bank.getRows();
+  for(int i = 0; i < rows; i++){
+    switch(i){
+      case {bank.getInt("pid",i)==11}: num = 0; break;
+      case {bank.getInt("pid",i)==2212}: num = 1; break;
+      case {bank.getInt("charge",i)>0}: num = 2; break;
+      default: num = -1; break;
+    }
 
-        double ShiftLength = (TargetPos.x() - RotatedVertPos.x())/RotatedVertDir.x();
-        RotatedVertDir.setXYZ(ShiftLength*RotatedVertDir.x(),ShiftLength*RotatedVertDir.y(),ShiftLength*RotatedVertDir.z());
-        RotatedVertPos.add(RotatedVertDir);
+    if(num >= 0 && num < part.size()){
+      vec4[num].setPxPyPzM(bank.getFloat("px",i), bank.getFloat("py",i), bank.getFloat("pz",i), partMass[num]);
+      vec3[num].setXYZ(bank.getFloat("vx",i), bank.getFloat("vy",i), bank.getFloat("vz",i));
+      vec3_corr[num] = myTarget.Get_CorrectedVertex(vec3[num],vec4[num]); // corrected vertex
 
-        Vector3 ParticleVertCorr = Vector3.from(RotatedVertPos);
-        ParticleVertCorr.sub(TargetPos.x(),TargetPos.y(),0.0);
+      h1_Vz[num].fill(vec3[num].z());
+      double phi_deg = Math.toDegrees(vec4[num].phi()); // convert to degrees
+      h2_Vz_phi[num].fill(vec3[num].z(),phi_deg);
 
-        h1_Vz_corr.fill(ParticleVertCorr.z());
-        h2_Vz_phi_corr.fill(ParticleVertCorr.z(),phi_deg);
-//      bank.show();
+      sector = FindSector(phi_deg);
+//      System.out.println("Sector " + sector + " " + myTarget.Get_Sector(vec4[num].phi()) + " " + phi_deg);
+      h1_Vz_sec[num][sector-1].fill(vec3[num].z());
+
+      if(Math.abs(vec3_corr[num].y())<1.4){
+        h1_Vz_corr[num].fill(vec3_corr[num].z());
+        h2_Vz_phi_corr[num].fill(vec3_corr[num].z(),phi_deg);
+        h1_Vz_sec_corr[num][sector-1].fill(vec3_corr[num].z());
       }
     }
-    counterFile++;
   }
-  reader.close();
-  System.out.println("processed " + counterFile + " in " + args[j]);
-  counterTotal += counterFile;
+  counterFile++;
 }
 System.out.println("processed (total) = " + counterTotal);
 
-TCanvas c1 = new TCanvas("c1",900,900);
-c1.divide(2,2);
-c1.cd(0);
-c1.draw(h1_Vz);
-c1.cd(1);
-c1.draw(h2_Vz_phi);
-c1.cd(2);
-c1.draw(h1_Vz_corr);
-c1.cd(3);
-c1.draw(h2_Vz_phi_corr);
+String dirLabel;
+TDirectory dir = new TDirectory();
+TCanvas[] can = new TCanvas[part.size()];
+int can_title_size = 24;
+part.eachWithIndex { partName, ih->
+  dirLabel = "/"+partName;
+  dir.mkdir(dirLabel);
+  dir.cd(dirLabel);
+  can[ih] = new TCanvas("can_"+partName,1500,900);
+  can[ih].divide(3,2);
+  can[ih].cd(0);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  can[ih].draw(h1_Vz[ih]);
+  dir.addDataSet(h1_Vz[ih]);
+  can[ih].cd(1);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  can[ih].draw(h2_Vz_phi[ih]);
+  dir.addDataSet(h2_Vz_phi[ih]);
+  can[ih].cd(2);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  for(int i=0; i<MAX_SECTORS; i++){
+    h1_Vz_sec[ih][i].setLineColor(i);
+    if(i==0){
+      can[ih].draw(h1_Vz_sec[ih][i]);
+    }else{
+      can[ih].draw(h1_Vz_sec[ih][i],"same");
+    }
+    dir.addDataSet(h1_Vz_sec[ih][i]);
+  }
+  can[ih].cd(3);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  can[ih].draw(h1_Vz_corr[ih]);
+  dir.addDataSet(h1_Vz_corr[ih]);
+  can[ih].cd(4);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  can[ih].draw(h2_Vz_phi_corr[ih]);
+  dir.addDataSet(h2_Vz_phi_corr[ih]);
+  can[ih].cd(5);
+  can[ih].getPad().setTitleFontSize(can_title_size);
+  for(int i=0; i<MAX_SECTORS; i++){
+    h1_Vz_sec_corr[ih][i].setLineColor(i+1);
+    if(i==0){
+      can[ih].draw(h1_Vz_sec_corr[ih][i]);
+    }else{
+      can[ih].draw(h1_Vz_sec_corr[ih][i],"same");
+    }
+    dir.addDataSet(h1_Vz_sec_corr[ih][i]);
+  }
+}
+dir.writeFile(outFile); // write the histograms to the file
+
+long et = System.currentTimeMillis(); // end time
+long time = et-st; // time to run the script
+System.out.println(" time = " + (time/1000.0)); // print run time to the screen

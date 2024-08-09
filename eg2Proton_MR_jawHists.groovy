@@ -1,6 +1,18 @@
-import org.jlab.groot.base.GStyle
+import org.jlab.jnp.hipo4.data.*;
+import org.jlab.jnp.hipo4.io.*;
+//---- imports for GROOT library
 import org.jlab.groot.data.*;
+import org.jlab.groot.graphics.*;
 import org.jlab.groot.ui.*;
+import org.jlab.groot.base.GStyle
+//---- imports for PHYSICS library
+import org.jlab.clas.physics.*;
+//---- imports for PDG library
+import org.jlab.clas.pdg.PhysicsConstants;
+import org.jlab.clas.pdg.PDGDatabase;
+import org.jlab.clas.pdg.PDGParticle;
+//---- imports for OPTIONPARSER library
+import org.jlab.jnp.utils.options.OptionParser;
 
 import eg2AnaTree.*;
 
@@ -14,35 +26,27 @@ int GREEN = 33;
 int BLUE = 34;
 int YELLOW = 35;
 
-def cli = new CliBuilder(usage:'eg2Proton_MR_jawhists.groovy [options] infile1 infile2 ...')
-cli.h(longOpt:'help', 'Print this message.')
-cli.o(longOpt:'output', args:1, argName:'Histogram output file', type: String, 'Output file name')
-cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)')
-cli.g(longOpt:'graph', 'Graph monitoring histograms');
+OptionParser p = new OptionParser("eg2Proton_MR_jawHists.groovy");
 
-def options = cli.parse(args);
-if (!options) return;
-if (options.h){ cli.usage(); return; }
-
-def outFile = "eg2Proton_MR_jawHists.hipo";
-if(options.o) outFile = options.o;
-
+String outFile = "eg2Proton_MR_jawHists.hipo";
+p.addOption("-o", outFile, "Output file name");
 String userTgt = "C";
-if(options.s) userTgt = options.s;
+p.addOption("-s", userTgt, "Solid Target (C, Fe, Pb)");
+int bGraph = 1;
+p.addOption("-g",Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
 
-boolean bGraph = false;
-if(options.g) bGraph = true;
-
-def extraArguments = options.arguments()
-if (extraArguments.isEmpty()){
-  println "No input file!";
-  cli.usage();
-  return;
-}
+p.parse(args);
+outFile = p.getOption("-o").stringValue();
+userTgt = p.getOption("-s").stringValue();
+bGraph = p.getOption("-g").intValue();
 
 String fileName;
-extraArguments.each { infile ->
-  fileName = infile;
+if(p.getInputList().size()==1){
+    fileName = p.getInputList().get(0);
+}else{
+    System.out.println("*** Wrong number of inputs.  Only one input file. ***")
+    p.printUsage();
+    System.exit(0);
 }
 
 HistInfo myHI = new HistInfo();

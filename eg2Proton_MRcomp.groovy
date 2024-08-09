@@ -1,9 +1,16 @@
 import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
 import org.jlab.jnp.physics.*;
-import org.jlab.jnp.pdg.PhysicsConstants;
-import org.jlab.jnp.pdg.PDGDatabase;
-import org.jlab.jnp.pdg.PDGParticle;
+//---- imports for PDG library
+import org.jlab.clas.pdg.PhysicsConstants;
+import org.jlab.clas.pdg.PDGDatabase;
+import org.jlab.clas.pdg.PDGParticle;
+//---- imports for OPTIONPARSER library
+import org.jlab.jnp.utils.options.OptionParser;
+
+//import org.jlab.jnp.pdg.PhysicsConstants;
+//import org.jlab.jnp.pdg.PDGDatabase;
+//import org.jlab.jnp.pdg.PDGParticle;
 
 import eg2AnaTree.*;
 
@@ -17,12 +24,8 @@ GStyle.getAxisAttributesX().setLabelFontSize(18);
 GStyle.getAxisAttributesY().setLabelFontSize(18);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
-def cli = new CliBuilder(usage:'eg2Proton_MRcomp.groovy')
-cli.h(longOpt:'help', 'Print this message.')
-
-def options = cli.parse(args);
-if (!options) return;
-if (options.h){ cli.usage(); return; }
+OptionParser p = new OptionParser("eg2Proton_MRcomp.groovy");
+p.parse(args);
 
 HistInfo myHI = new HistInfo();
 List<String> Var = myHI.getVariables();
@@ -33,7 +36,7 @@ int c1_title_size = 22;
 TCanvas[] can = new TCanvas[Var.size()];
 TDirectory[] dir = new TDirectory[solidTgt.size()];
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String fileName = "eg2Proton_MRcorr_hists_" + nTgt + "_newAcc.hipo";
+  String fileName = "MR1D/eg2Proton_MR_corr_hists_" + nTgt + "_std.hipo";
   println fileName;
   dir[iTgt] = new TDirectory();
   dir[iTgt].readFile(fileName);

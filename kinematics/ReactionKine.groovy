@@ -1,7 +1,9 @@
 package kinematics
 
-import org.jlab.jnp.physics.*;
-import org.jlab.jnp.pdg.PhysicsConstants;
+import org.jlab.clas.physics.*;
+import org.jlab.clas.pdg.PhysicsConstants;
+//import org.jlab.jnp.physics.*;
+//import org.jlab.jnp.pdg.PhysicsConstants;
 
 class ReactionKine {
   LorentzVector beamElectron = new LorentzVector(0.0,0.0,0.0,0.0);
@@ -43,19 +45,19 @@ class ReactionKine {
       return target;
   }
   void setScatteredElectron(LorentzVector vec4){
-      scatteredElectron = LorentzVector.from(vec4);
+      scatteredElectron.copy(vec4);
   }
   LorentzVector getScatteredElectron(){
       return scatteredElectron;
   }
   void setHadron(LorentzVector vec4){
-      hadron = LorentzVector.from(vec4);
+      hadron.copy(vec4);
   }
   LorentzVector getHadron(){
       return hadron;
   }
   LorentzVector getVirtualPhoton(){
-    virtualPhoton = LorentzVector.from(beamElectron);   // calculate Q-squared, first copy incident e- 4-vector
+    virtualPhoton.copy(beamElectron);   // calculate Q-squared, first copy incident e- 4-vector
     virtualPhoton.sub(scatteredElectron);  // calculate Q-squared, subtract scattered e- 4-vector
     return virtualPhoton;
   }
@@ -65,11 +67,13 @@ class ReactionKine {
   }
   double W(){
     LorentzVector virt = this.getVirtualPhoton()
-    return virt.add(target).mass();
+    virt.add(target)
+    return virt.mass();
   }
   double Mx(){ // missing mass: beam + target - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhoton();
-    return virt.add(target).sub(hadron).mass();
+    virt.add(target).sub(hadron)
+    return virt.mass();
   }
   double Mx2(){ // missing mass: beam + target - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhoton();

@@ -1,6 +1,7 @@
 package eg2Cuts
 
-import org.jlab.jnp.physics.*;
+import org.jlab.clas.physics.*;
+//import org.jlab.jnp.physics.*;
 
 class clas6FidCuts {
 

@@ -278,7 +278,7 @@ h2_dTOF_VS_P_cut.setTitleY("#DeltaTOF (ns)");
 dir.addDataSet(h2_dTOF_VS_P_cut);
 
 String[] TgtLabel = ["D2","Nuc","Other"];
-String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z_L_C"];
+String[] xLabel = ["Q^2 (GeV^2)","#nu (GeV)","z_h","pT^2 (GeV^2)","z "];
 String[] Var = ["Qsq","nu","zh","pT2","zLC"];
 int[] nbins = [50,50,50,30,50];
 double[] xlo = [Q2_DIS,2.2,0.0,0.0,0.0];
