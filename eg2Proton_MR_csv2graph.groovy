@@ -1,16 +1,8 @@
 import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
 import org.jlab.jnp.physics.*;
-//---- imports for PDG library
-import org.jlab.clas.pdg.PhysicsConstants;
-import org.jlab.clas.pdg.PDGDatabase;
-import org.jlab.clas.pdg.PDGParticle;
 //---- imports for OPTIONPARSER library
 import org.jlab.jnp.utils.options.OptionParser;
-
-//import org.jlab.jnp.pdg.PhysicsConstants;
-//import org.jlab.jnp.pdg.PDGDatabase;
-//import org.jlab.jnp.pdg.PDGParticle;
 
 import eg2AnaTree.*;
 
@@ -26,7 +18,13 @@ GStyle.getAxisAttributesY().setLabelFontSize(18);
 GStyle.getAxisAttributesZ().setLabelFontSize(18);
 
 OptionParser p = new OptionParser("eg2Proton_MR_csv2graph.groovy");
+//String userTgt = "C";
+//p.addOption("-s", userTgt, "Solid Target (C, Fe, Pb)");
+String userSigmaCut = "std";
+p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (std, sigma_1_0, sigma_1_5, sigma_2_0, sigma_2_5, sigma_3_0)");
 p.parse(args);
+//userTgt = p.getOption("-s").stringValue();
+userSigmaCut = p.getOption("-c").stringValue();
 
 HistInfo myHI = new HistInfo();
 List<String> Var = myHI.getVariables();
@@ -52,7 +50,7 @@ Var.eachWithIndex { nVar, iVar->
     dir[iTgt].mkdir(nVar);
     dir[iTgt].cd(nVar);
     String grcorr = "gr_mrProtonCorr_" + nVar;
-    String fileName = "MR1D/graph2txt/" + grcorr + "_" + nTgt + ".csv";
+    String fileName = "MR1D/csvFiles/" + userSigmaCut + "/" + grcorr + "_" + nTgt + "_" + userSigmaCut + ".csv";
     gr_mrProtonCorr[iVar][iTgt] = new GraphErrors(grcorr).csvGraphXYEY(fileName,0,1,3,0);
     gr_mrProtonCorr[iVar][iTgt].setTitleX(xLabel[iVar]);
     gr_mrProtonCorr[iVar][iTgt].setTitleY("R^p");
@@ -83,7 +81,7 @@ Var.eachWithIndex { nVar, iVar->
     dir[iTgt].mkdir(nVar);
     dir[iTgt].cd(nVar);
     String grUnCorr = "gr_mrProton_" + nVar;
-    String fileName = "MR1D/graph2txt/" + grUnCorr + "_" + nTgt + ".csv";
+    String fileName = "MR1D/csvFiles/" + userSigmaCut + "/" + grUnCorr + "_" + nTgt + "_" + userSigmaCut + ".csv";
     gr_mrProton[iVar][iTgt] = new GraphErrors(grUnCorr).csvGraphXYEY(fileName,0,1,3,0);
     gr_mrProton[iVar][iTgt].setTitleX(xLabel[iVar]);
     gr_mrProton[iVar][iTgt].setTitleY("R^p (uncorrected)");
@@ -91,11 +89,11 @@ Var.eachWithIndex { nVar, iVar->
     gr_mrProton[iVar][iTgt].setLineColor(iTgt+1);
     gr_mrProton[iVar][iTgt].setMarkerSize(5);
     gr_mrProton[iVar][iTgt].setMarkerStyle(iTgt);
-    gr_mrProton[iVar][iTgt].setName(grcorr);
+    gr_mrProton[iVar][iTgt].setName(grUnCorr);
     if(iTgt==0){
-      can[iVar].draw(gr_mrProton[iVar][iTgt]);
+      canUnCorr[iVar].draw(gr_mrProton[iVar][iTgt]);
     }else{
-      can[iVar].draw(gr_mrProton[iVar][iTgt],"same");
+      canUnCorr[iVar].draw(gr_mrProton[iVar][iTgt],"same");
     }
     dir[iTgt].addDataSet(gr_mrProton[iVar][iTgt]); // add to the histogram file
   }
@@ -112,15 +110,16 @@ Var.eachWithIndex { nVar, iVar->
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
     dir[iTgt].cd(nVar);
-    String grcorr = "gr_acc_" + nVar;
-    String fileName = "MR1D/graph2txt/" + grcorr + "_" + nTgt + ".csv";
-    grAcc[iVar][iTgt] = new GraphErrors(grcorr).csvGraphXYEY(fileName,0,1,3,0);
+    String grAccRatio = "gr_rat" + nTgt +"_" + nVar;
+    String fileName = "MR1D/csvFiles/" + userSigmaCut + "/" + grAccRatio + "_" + nTgt + "_" + userSigmaCut + ".csv";
+    grAcc[iVar][iTgt] = new GraphErrors(grAccRatio).csvGraphXYEY(fileName,0,1,3,0);
     grAcc[iVar][iTgt].setTitleX(xLabel[iVar]);
     grAcc[iVar][iTgt].setTitleY("Acceptance Ratio");
     grAcc[iVar][iTgt].setMarkerColor(iTgt+1);
     grAcc[iVar][iTgt].setLineColor(iTgt+1);
     grAcc[iVar][iTgt].setMarkerSize(5);
     grAcc[iVar][iTgt].setMarkerStyle(iTgt);
+    grAcc[iVar][iTgt].setName(grAccRatio);
     if(iTgt==0){
       canAcc[iVar].draw(grAcc[iVar][iTgt]);
     }else{
@@ -129,8 +128,9 @@ Var.eachWithIndex { nVar, iVar->
     dir[iTgt].addDataSet(grAcc[iVar][iTgt]); // add to the histogram file
   }
 }
-
+/*
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String outFile = "eg2Proton_MR_corr_hists_" + nTgt + "_std_csv.hipo"
+  String outFile = "eg2Proton_MR_corr_hists_" + nTgt + + "_" + userSigmaCut + "_csv.hipo"
   dir[iTgt].writeFile(outFile); // write the histograms to the file
 }
+*/

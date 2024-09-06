@@ -1,16 +1,8 @@
 import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
 import org.jlab.jnp.physics.*;
-//---- imports for PDG library
-import org.jlab.clas.pdg.PhysicsConstants;
-import org.jlab.clas.pdg.PDGDatabase;
-import org.jlab.clas.pdg.PDGParticle;
 //---- imports for OPTIONPARSER library
 import org.jlab.jnp.utils.options.OptionParser;
-
-//import org.jlab.jnp.pdg.PhysicsConstants;
-//import org.jlab.jnp.pdg.PDGDatabase;
-//import org.jlab.jnp.pdg.PDGParticle;
 
 import eg2AnaTree.*;
 
@@ -19,39 +11,36 @@ import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
 
 OptionParser p = new OptionParser("eg2Proton_MR_graph2txt.groovy");
+
+String userTgt = "C";
+p.addOption("-s", userTgt, "Solid Target (C, Fe, Pb)");
+String userSigmaCut = "std";
+p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (std, sigma_1_0, sigma_1_5, sigma_2_0, sigma_2_5, sigma_3_0)");
 p.parse(args);
+userTgt = p.getOption("-s").stringValue();
+userSigmaCut = p.getOption("-c").stringValue();
 
 HistInfo myHI = new HistInfo();
 List<String> Var = myHI.getVariables();
-List<String> solidTgt = myHI.getSolidTgtLabel();
 
-int c1_title_size = 22;
-TCanvas[] can = new TCanvas[Var.size()];
-TDirectory[] dir = new TDirectory[solidTgt.size()];
-solidTgt.eachWithIndex { nTgt, iTgt ->
-  String fileName = "MR1D/eg2Proton_MR_corr_hists_" + nTgt + "_std.hipo";
-  println fileName;
-  dir[iTgt] = new TDirectory();
-  dir[iTgt].readFile(fileName);
-}
+String fileName = "MR1D/eg2Proton_MR_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
+TDirectory dir = new TDirectory();
+dir.readFile(fileName);
 
-GraphErrors[][] gr_mrProton = new GraphErrors[Var.size()][solidTgt.size()];
-GraphErrors[][] gr_mrProtonCorr = new GraphErrors[Var.size()][solidTgt.size()];
-GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
+GraphErrors[] gr_mrProton = new GraphErrors[Var.size()];
+GraphErrors[] gr_mrProtonCorr = new GraphErrors[Var.size()];
+GraphErrors[] grAcc = new GraphErrors[Var.size()];
 
 Var.eachWithIndex { nVar, iVar->
   String grProton = "gr_mrProton_" + nVar;
+  gr_mrProton[iVar] = dir.getObject(nVar,grProton);
+  gr_mrProton[iVar].save(grProton + "_" + userTgt + "_" + userSigmaCut + ".csv");
+
   String grcorr = "gr_mrProtonCorr_" + nVar;
-  String grAccRatio = "gr_acc_" + nVar;
+  gr_mrProtonCorr[iVar] = dir.getObject(nVar,grcorr);
+  gr_mrProtonCorr[iVar].save(grcorr + "_" + userTgt + "_" + userSigmaCut + ".csv");
 
-  solidTgt.eachWithIndex { nTgt, iTgt ->
-    gr_mrProton[iVar][iTgt] = dir[iTgt].getObject(nVar,grProton);
-    gr_mrProton[iVar][iTgt].save(grProton + "_" + nTgt + ".csv");
-
-    gr_mrProtonCorr[iVar][iTgt] = dir[iTgt].getObject(nVar,grcorr);
-    gr_mrProtonCorr[iVar][iTgt].save(grcorr + "_" + nTgt + ".csv");
-
-    grAcc[iVar][iTgt] = dir[iTgt].getObject(nVar,grAccRatio);
-    grAcc[iVar][iTgt].save(grAccRatio + "_" + nTgt + ".csv");
-  }
+  String grAccRatio = "gr_rat" + userTgt +"_" + nVar;
+  grAcc[iVar] = dir.getObject(nVar,grAccRatio);
+  grAcc[iVar].save(grAccRatio + "_" + userTgt + "_" + userSigmaCut + ".csv");
 }
