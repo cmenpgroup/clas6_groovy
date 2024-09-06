@@ -35,17 +35,23 @@ solidTgt.eachWithIndex { nTgt, iTgt ->
   dir[iTgt].readFile(fileName);
 }
 
+GraphErrors[][] gr_mrProton = new GraphErrors[Var.size()][solidTgt.size()];
 GraphErrors[][] gr_mrProtonCorr = new GraphErrors[Var.size()][solidTgt.size()];
 GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
 
 Var.eachWithIndex { nVar, iVar->
+  String grProton = "gr_mrProton_" + nVar;
   String grcorr = "gr_mrProtonCorr_" + nVar;
   String grAccRatio = "gr_acc_" + nVar;
-  solidTgt.eachWithIndex { nTgt, iTgt ->
-    gr_mrProtonCorr[iVar][iTgt] = dir[iTgt].getObject(nVar,grcorr);
-    gr_mrProtonCorr[iVar][iTgt].save(grcorr + "_" + nTgt + ".txt");
 
-    grAcc[iVar][iTgt] = dir[iTgt].getObject(nVar,grcorr);
-    grAcc[iVar][iTgt].save(grAccRatio + "_" + nTgt + ".txt");
+  solidTgt.eachWithIndex { nTgt, iTgt ->
+    gr_mrProton[iVar][iTgt] = dir[iTgt].getObject(nVar,grProton);
+    gr_mrProton[iVar][iTgt].save(grProton + "_" + nTgt + ".csv");
+
+    gr_mrProtonCorr[iVar][iTgt] = dir[iTgt].getObject(nVar,grcorr);
+    gr_mrProtonCorr[iVar][iTgt].save(grcorr + "_" + nTgt + ".csv");
+
+    grAcc[iVar][iTgt] = dir[iTgt].getObject(nVar,grAccRatio);
+    grAcc[iVar][iTgt].save(grAccRatio + "_" + nTgt + ".csv");
   }
 }
