@@ -25,7 +25,7 @@ YieldsForMR3zh myMR = new YieldsForMR3zh();
 List<String> Q2Cuts = myMR.getQ2Cuts();
 List<String> nuCuts = myMR.getNuCuts();
 
-String fileName = "eg2Proton_MR3zh_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
+String fileName = "MR3zh/eg2Proton_MR3zh_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
 println fileName;
 TDirectory dir = new TDirectory();
 dir.readFile(fileName);
@@ -40,7 +40,7 @@ nuCuts.eachWithIndex { nNu, iNu->
     gr_mrProtonCorr[iQ2][iNu] = dir.getObject("MR3zh/",grcorr);
     gr_mrProtonCorr[iQ2][iNu].save(grcorr + "_" + userTgt + "_" + userSigmaCut + ".csv");
 
-    String grUnCorr = "gr_mrProton_" + iQ2 + iNu;
+    String grUnCorr = "gr_mrProton_zh_" + iQ2 + iNu;
     gr_mrProtonCorr[iQ2][iNu] = dir.getObject("MR3zh/",grUnCorr);
     gr_mrProtonCorr[iQ2][iNu].save(grUnCorr + "_" + userTgt + "_" + userSigmaCut + ".csv");
 
