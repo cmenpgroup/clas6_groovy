@@ -22,9 +22,12 @@ OptionParser p = new OptionParser("eg2Proton_MR_csv2graph.groovy");
 //p.addOption("-s", userTgt, "Solid Target (C, Fe, Pb)");
 String userSigmaCut = "std";
 p.addOption("-c", userSigmaCut, "Proton ID Cut sigma (std, sigma_1_0, sigma_1_5, sigma_2_0, sigma_2_5, sigma_3_0)");
+int bGraph = 1;
+p.addOption("-g",Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
 p.parse(args);
 //userTgt = p.getOption("-s").stringValue();
 userSigmaCut = p.getOption("-c").stringValue();
+bGraph = p.getOption("-g").intValue();
 
 HistInfo myHI = new HistInfo();
 List<String> Var = myHI.getVariables();
@@ -34,6 +37,9 @@ List<String> solidTgt = myHI.getSolidTgtLabel();
 TDirectory[] dir = new TDirectory[solidTgt.size()];
 solidTgt.eachWithIndex { nTgt, iTgt ->
   dir[iTgt] = new TDirectory();
+  Var.eachWithIndex { nVar, iVar->
+    dir[iTgt].mkdir(nVar);
+  }
 }
 
 int c1_title_size = 22;
@@ -41,13 +47,14 @@ TCanvas[] can = new TCanvas[Var.size()];
 GraphErrors[][] gr_mrProtonCorr = new GraphErrors[Var.size()][solidTgt.size()];
 
 Var.eachWithIndex { nVar, iVar->
-  String cname = "can" + iVar;
-  can[iVar] = new TCanvas(cname,600,600);
-  can[iVar].cd(0);
-  can[iVar].getPad().setTitleFontSize(c1_title_size);
+  if(bGraph){
+    String cname = "can" + iVar;
+    can[iVar] = new TCanvas(cname,600,600);
+    can[iVar].cd(0);
+    can[iVar].getPad().setTitleFontSize(c1_title_size);
+  }
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
-    dir[iTgt].mkdir(nVar);
     dir[iTgt].cd(nVar);
     String grcorr = "gr_mrProtonCorr_" + nVar;
     String fileName = "MR1D/csvFiles/" + userSigmaCut + "/" + grcorr + "_" + nTgt + "_" + userSigmaCut + ".csv";
@@ -59,12 +66,9 @@ Var.eachWithIndex { nVar, iVar->
     gr_mrProtonCorr[iVar][iTgt].setMarkerSize(5);
     gr_mrProtonCorr[iVar][iTgt].setMarkerStyle(iTgt);
     gr_mrProtonCorr[iVar][iTgt].setName(grcorr);
-    if(iTgt==0){
-      can[iVar].draw(gr_mrProtonCorr[iVar][iTgt]);
-    }else{
-      can[iVar].draw(gr_mrProtonCorr[iVar][iTgt],"same");
-    }
+    if(bGraph) can[iVar].draw(gr_mrProtonCorr[iVar][iTgt],"same");
     dir[iTgt].addDataSet(gr_mrProtonCorr[iVar][iTgt]); // add to the histogram file
+    dir[iTgt].cd();
   }
 }
 
@@ -72,13 +76,14 @@ TCanvas[] canUnCorr = new TCanvas[Var.size()];
 GraphErrors[][] gr_mrProton = new GraphErrors[Var.size()][solidTgt.size()];
 
 Var.eachWithIndex { nVar, iVar->
-  String cname = "canUnCorr" + iVar;
-  canUnCorr[iVar] = new TCanvas(cname,600,600);
-  canUnCorr[iVar].cd(0);
-  canUnCorr[iVar].getPad().setTitleFontSize(c1_title_size);
+  if(bGraph){
+    String cname = "canUnCorr" + iVar;
+    canUnCorr[iVar] = new TCanvas(cname,600,600);
+    canUnCorr[iVar].cd(0);
+    canUnCorr[iVar].getPad().setTitleFontSize(c1_title_size);
+  }
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
-    dir[iTgt].mkdir(nVar);
     dir[iTgt].cd(nVar);
     String grUnCorr = "gr_mrProton_" + nVar;
     String fileName = "MR1D/csvFiles/" + userSigmaCut + "/" + grUnCorr + "_" + nTgt + "_" + userSigmaCut + ".csv";
@@ -90,12 +95,9 @@ Var.eachWithIndex { nVar, iVar->
     gr_mrProton[iVar][iTgt].setMarkerSize(5);
     gr_mrProton[iVar][iTgt].setMarkerStyle(iTgt);
     gr_mrProton[iVar][iTgt].setName(grUnCorr);
-    if(iTgt==0){
-      canUnCorr[iVar].draw(gr_mrProton[iVar][iTgt]);
-    }else{
-      canUnCorr[iVar].draw(gr_mrProton[iVar][iTgt],"same");
-    }
+    if(bGraph) canUnCorr[iVar].draw(gr_mrProton[iVar][iTgt],"same");
     dir[iTgt].addDataSet(gr_mrProton[iVar][iTgt]); // add to the histogram file
+    dir[iTgt].cd();
   }
 }
 
@@ -103,10 +105,12 @@ TCanvas[] canAcc = new TCanvas[Var.size()];
 GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
 
 Var.eachWithIndex { nVar, iVar->
-  String cname = "canAcc" + iVar;
-  canAcc[iVar] = new TCanvas(cname,600,600);
-  canAcc[iVar].cd(0);
-  canAcc[iVar].getPad().setTitleFontSize(c1_title_size);
+  if(bGraph){
+    String cname = "canAcc" + iVar;
+    canAcc[iVar] = new TCanvas(cname,600,600);
+    canAcc[iVar].cd(0);
+    canAcc[iVar].getPad().setTitleFontSize(c1_title_size);
+  }
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
     dir[iTgt].cd(nVar);
@@ -120,17 +124,13 @@ Var.eachWithIndex { nVar, iVar->
     grAcc[iVar][iTgt].setMarkerSize(5);
     grAcc[iVar][iTgt].setMarkerStyle(iTgt);
     grAcc[iVar][iTgt].setName(grAccRatio);
-    if(iTgt==0){
-      canAcc[iVar].draw(grAcc[iVar][iTgt]);
-    }else{
-      canAcc[iVar].draw(grAcc[iVar][iTgt],"same");
-    }
+    if(bGraph) canAcc[iVar].draw(grAcc[iVar][iTgt],"same");
     dir[iTgt].addDataSet(grAcc[iVar][iTgt]); // add to the histogram file
+    dir[iTgt].cd();
   }
 }
-/*
+
 solidTgt.eachWithIndex { nTgt, iTgt ->
-  String outFile = "eg2Proton_MR_corr_hists_" + nTgt + + "_" + userSigmaCut + "_csv.hipo"
+  String outFile = "eg2Proton_MR_corr_hists_" + nTgt + "_" + userSigmaCut + "_csv.hipo"
   dir[iTgt].writeFile(outFile); // write the histograms to the file
 }
-*/
