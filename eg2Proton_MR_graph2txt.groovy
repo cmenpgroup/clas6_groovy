@@ -23,7 +23,7 @@ userSigmaCut = p.getOption("-c").stringValue();
 HistInfo myHI = new HistInfo();
 List<String> Var = myHI.getVariables();
 
-String fileName = "MR1D/eg2Proton_MR_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
+String fileName = "MR1D/jawHipo/eg2Proton_MR_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
 TDirectory dir = new TDirectory();
 dir.readFile(fileName);
 

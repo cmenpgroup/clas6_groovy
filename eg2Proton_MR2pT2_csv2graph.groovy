@@ -41,14 +41,20 @@ solidTgt.eachWithIndex { nTgt, iTgt ->
 }
 
 int c1_title_size = 22;
-TCanvas canAcc = new TCanvas("canAcc",900,900);
-canAcc.divide(3,3);
 
-TCanvas canCorr = new TCanvas("canCorr",900,900);
-canCorr.divide(3,3);
+TCanvas canAcc;
+TCanvas canCorr;
+TCanvas canUnCorr;
+if(bGraph){
+  canAcc = new TCanvas("canAcc",900,900);
+  canAcc.divide(3,3);
 
-TCanvas canUnCorr = new TCanvas("canUnCorr",900,900);
-canUnCorr.divide(3,3);
+  canCorr = new TCanvas("canCorr",900,900);
+  canCorr.divide(3,3);
+
+  canUnCorr = new TCanvas("canUnCorr",900,900);
+  canUnCorr.divide(3,3);
+}
 
 GraphErrors[][] gr_mrProtonCorr = new GraphErrors[zhCuts.size()][solidTgt.size()];
 GraphErrors[][] gr_mrProton = new GraphErrors[zhCuts.size()][solidTgt.size()];
@@ -67,7 +73,7 @@ zhCuts.eachWithIndex { nZh, iZh->
     gr_mrProtonCorr[iZh][iTgt].setMarkerSize(5);
     gr_mrProtonCorr[iZh][iTgt].setMarkerStyle(iTgt);
     gr_mrProtonCorr[iZh][iTgt].setName(grcorr);
-    canCorr.cd(iZh).draw(gr_mrProtonCorr[iZh][iTgt],"same");
+    if(bGraph) canCorr.cd(iZh).draw(gr_mrProtonCorr[iZh][iTgt],"same");
     dir[iTgt].addDataSet(gr_mrProtonCorr[iZh][iTgt]); // add to the histogram file
     dir[iTgt].cd();
 
@@ -82,7 +88,7 @@ zhCuts.eachWithIndex { nZh, iZh->
     gr_mrProton[iZh][iTgt].setMarkerSize(5);
     gr_mrProton[iZh][iTgt].setMarkerStyle(iTgt);
     gr_mrProton[iZh][iTgt].setName(grUnCorr);
-    canUnCorr.cd(iZh).draw(gr_mrProton[iZh][iTgt],"same");
+    if(bGraph) canUnCorr.cd(iZh).draw(gr_mrProton[iZh][iTgt],"same");
     dir[iTgt].addDataSet(gr_mrProton[iZh][iTgt]); // add to the histogram file
     dir[iTgt].cd();
 
@@ -97,7 +103,7 @@ zhCuts.eachWithIndex { nZh, iZh->
     grAcc[iZh][iTgt].setMarkerSize(5);
     grAcc[iZh][iTgt].setMarkerStyle(iTgt);
     grAcc[iZh][iTgt].setName(grAccRatio);
-    canAcc.cd(iZh).draw(grAcc[iZh][iTgt],"same");
+    if(bGraph) canAcc.cd(iZh).draw(grAcc[iZh][iTgt],"same");
     dir[iTgt].addDataSet(grAcc[iZh][iTgt]); // add to the histogram file
     dir[iTgt].cd();
   }

@@ -24,7 +24,7 @@ HistInfo myHI = new HistInfo();
 YieldsForMR2pT2 myMR = new YieldsForMR2pT2();
 List<String> zhCuts = myMR.getZhCuts();
 
-String fileName = "MR2pT2/eg2Proton_MR2pT2_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
+String fileName = "MR2pT2/jawHipo/eg2Proton_MR2pT2_corr_hists_" + userTgt + "_" + userSigmaCut + ".hipo";
 println fileName;
 TDirectory dir = new TDirectory();
 dir.readFile(fileName);

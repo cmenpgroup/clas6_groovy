@@ -42,18 +42,24 @@ solidTgt.eachWithIndex { nTgt, iTgt ->
 }
 
 int c1_title_size = 22;
-TCanvas canAcc = new TCanvas("canAcc",900,900);
-canAcc.divide(3,3);
+TCanvas canAcc;
+TCanvas canCorr;
+TCanvas canUnCorr;
+if(bGraph){
+  println "Test A";
+  canAcc = new TCanvas("canAcc",900,900);
+  canAcc.divide(3,3);
 
-TCanvas canCorr = new TCanvas("canCorr",900,900);
-canCorr.divide(3,3);
+  canCorr = new TCanvas("canCorr",900,900);
+  canCorr.divide(3,3);
 
-TCanvas canUnCorr = new TCanvas("canUnCorr",900,900);
-canUnCorr.divide(3,3);
+  canUnCorr = new TCanvas("canUnCorr",900,900);
+  canUnCorr.divide(3,3);
+}
 
-GraphErrors[][] gr_mrProtonCorr = new GraphErrors[zhCuts.size()][solidTgt.size()];
-GraphErrors[][] gr_mrProton = new GraphErrors[zhCuts.size()][solidTgt.size()];
-GraphErrors[][] grAcc = new GraphErrors[zhCuts.size()][solidTgt.size()];
+GraphErrors[][][] gr_mrProtonCorr = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
+GraphErrors[][][] gr_mrProton = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
+GraphErrors[][][] grAcc = new GraphErrors[Q2Cuts.size()][nuCuts.size()][solidTgt.size()];
 
 int iCount = 0;
 nuCuts.eachWithIndex { nNu, iNu->
@@ -70,12 +76,12 @@ nuCuts.eachWithIndex { nNu, iNu->
       gr_mrProtonCorr[iQ2][iNu][iTgt].setMarkerSize(5);
       gr_mrProtonCorr[iQ2][iNu][iTgt].setMarkerStyle(iTgt);
       gr_mrProtonCorr[iQ2][iNu][iTgt].setName(grcorr);
-      canCorr.cd(iCount).draw(gr_mrProtonCorr[iQ2][iNu][iTgt],"same");
+      if(bGraph) canCorr.cd(iCount).draw(gr_mrProtonCorr[iQ2][iNu][iTgt],"same");
       dir[iTgt].addDataSet(gr_mrProtonCorr[iQ2][iNu][iTgt]); // add to the histogram file
       dir[iTgt].cd();
 
       dir[iTgt].cd("MR3zh");
-      String grUnCorr = "gr_mrProton_" + iQ2 + iNu;
+      String grUnCorr = "gr_mrProton_zh_" + iQ2 + iNu;
       String fileUnCorr = "MR3zh/csvFiles/" + userSigmaCut + "/" + grUnCorr + "_" + nTgt + "_" + userSigmaCut + ".csv";
       gr_mrProton[iQ2][iNu][iTgt] = new GraphErrors(grUnCorr).csvGraphXYEY(fileUnCorr,0,1,3,0);
       gr_mrProton[iQ2][iNu][iTgt].setTitleX(myMR.getXlabel());
@@ -85,13 +91,13 @@ nuCuts.eachWithIndex { nNu, iNu->
       gr_mrProton[iQ2][iNu][iTgt].setMarkerSize(5);
       gr_mrProton[iQ2][iNu][iTgt].setMarkerStyle(iTgt);
       gr_mrProton[iQ2][iNu][iTgt].setName(grUnCorr);
-      canUnCorr.cd(iCount).draw(gr_mrProton[iQ2][iNu][iTgt],"same");
+      if(bGraph) canUnCorr.cd(iCount).draw(gr_mrProton[iQ2][iNu][iTgt],"same");
       dir[iTgt].addDataSet(gr_mrProton[iQ2][iNu][iTgt]); // add to the histogram file
       dir[iTgt].cd();
 
       dir[iTgt].cd("MR3zh");
       String grAccRatio = "gr_rat" + nTgt + "_" + iQ2 + iNu;
-      String fileAcc = "MR3zh/csvFiles/" + userSigmaCut + "/" + grAccRatio + "_pT2_" + nTgt + "_" + userSigmaCut + ".csv";
+      String fileAcc = "MR3zh/csvFiles/" + userSigmaCut + "/" + grAccRatio + "_" + nTgt + "_" + userSigmaCut + ".csv";
       grAcc[iQ2][iNu][iTgt] = new GraphErrors(grAccRatio).csvGraphXYEY(fileAcc,0,1,3,0);
       grAcc[iQ2][iNu][iTgt].setTitleX(myMR.getXlabel());
       grAcc[iQ2][iNu][iTgt].setTitleY("Acceptance Ratio");
@@ -100,7 +106,7 @@ nuCuts.eachWithIndex { nNu, iNu->
       grAcc[iQ2][iNu][iTgt].setMarkerSize(5);
       grAcc[iQ2][iNu][iTgt].setMarkerStyle(iTgt);
       grAcc[iQ2][iNu][iTgt].setName(grAccRatio);
-      canAcc.cd(iCount).draw(grAcc[iQ2][iNu][iTgt],"same");
+      if(bGraph) canAcc.cd(iCount).draw(grAcc[iQ2][iNu][iTgt],"same");
       dir[iTgt].addDataSet(grAcc[iQ2][iNu][iTgt]); // add to the histogram file
       dir[iTgt].cd();
     }
