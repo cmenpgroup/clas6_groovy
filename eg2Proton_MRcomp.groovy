@@ -4,6 +4,7 @@ import org.jlab.groot.graphics.*;
 import org.jlab.groot.ui.*;
 import org.jlab.groot.base.GStyle;
 import org.jlab.jnp.groot.graphics.TDataCanvas;
+//import org.jlab.jnp.groot.graphics.Legend;
 import org.jlab.jnp.groot.graphics.LegendNode2D;
 import org.jlab.jnp.groot.graphics.LegendNode2D.LegendStyle;
 import org.jlab.jnp.groot.settings.GRootColorPalette;
@@ -31,6 +32,13 @@ List<String> Var = myHI.getVariables();
 List<String> xLabel = myHI.getXlabel();
 List<String> solidTgt = myHI.getSolidTgtLabel();
 
+int[] legX = [475,450,400,400,400,400,400];
+int[] legY = [40,50,50,50,50,50,50];
+int[] legAccX = [200,400,350,450,400,300,450];
+int[] legAccY = [40,50,50,50,300,50,30];
+int[] mColor = [1,2,3];
+int[] mStyle = [1,2,4];
+
 int c1_title_size = 22;
 TDataCanvas[] can = new TDataCanvas[Var.size()];
 LegendNode2D[] legend = new LegendNode2D[Var.size()];
@@ -47,42 +55,36 @@ GraphErrors[][] gr_mrProtonCorr = new GraphErrors[Var.size()][solidTgt.size()];
 Var.eachWithIndex { nVar, iVar->
   String cname = "can" + iVar;
   can[iVar] = new TDataCanvas(600,600);
-  can[iVar].cd(0);
-//  can[iVar].getPad().setTitleFontSize(c1_title_size);
-//    if(nVar=="zh") can[iVar].getPad().getAxisY().setLog(true);
-
-  legend[iVar] = new LegendNode2D(400,30);
-
-  String imgRp = "eg2Proton_MR_comp_" + nVar + "_" + userSigmaCut + ".png";
+  legend[iVar] = new LegendNode2D(legX[iVar],legY[iVar]);
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
     String grcorr = "gr_mrProtonCorr_" + nVar;
     gr_mrProtonCorr[iVar][iTgt] = dir[iTgt].getObject(nVar,grcorr);
     gr_mrProtonCorr[iVar][iTgt].setTitleX(xLabel[iVar]);
     gr_mrProtonCorr[iVar][iTgt].setTitleY("R_p");
-    gr_mrProtonCorr[iVar][iTgt].setMarkerColor(iTgt+1);
-    gr_mrProtonCorr[iVar][iTgt].setLineColor(iTgt+1);
-    gr_mrProtonCorr[iVar][iTgt].setMarkerSize(5);
-    gr_mrProtonCorr[iVar][iTgt].setMarkerStyle(iTgt);
+    gr_mrProtonCorr[iVar][iTgt].setMarkerColor(mColor[iTgt]);
+    gr_mrProtonCorr[iVar][iTgt].setLineColor(mColor[iTgt]);
+    gr_mrProtonCorr[iVar][iTgt].setMarkerSize(8);
+    gr_mrProtonCorr[iVar][iTgt].setMarkerStyle(mStyle[iTgt]);
     legend[iVar].add(gr_mrProtonCorr[iVar][iTgt],nTgt);
-    can[iVar].draw(gr_mrProtonCorr[iVar][iTgt],"same");
+    can[iVar].getDataCanvas().cd(0).draw(gr_mrProtonCorr[iVar][iTgt],"same");
   }
   can[iVar].getDataCanvas().getRegion(0).addNode(legend[iVar]);
+  can[iVar].setMargins(50,25,50,75);
   can[iVar].repaint();
-//  can[iVar].save(imgRp);
+  String imgRp = "eg2Proton_MR_comp_" + nVar + "_" + userSigmaCut + ".png";
+  can[iVar].getDataCanvas().save(imgRp);
 }
 
-TCanvas[] canAcc = new TCanvas[Var.size()];
+TDataCanvas[] canAcc = new TDataCanvas[Var.size()];
+LegendNode2D[] legendAcc = new LegendNode2D[Var.size()];
 GraphErrors[][] grAcc = new GraphErrors[Var.size()][solidTgt.size()];
 
 // loop over the 1-D variables
 Var.eachWithIndex { nVar, iVar->
   String cname = "canAcc" + iVar;
-  canAcc[iVar] = new TCanvas(cname,600,600);
-  canAcc[iVar].cd(0);
-  canAcc[iVar].getPad().setTitleFontSize(c1_title_size);
-
-  String imgAccRat = "eg2Proton_MR_comp_" + nVar + "_" + userSigmaCut + "_AccRat.png";
+  canAcc[iVar] = new TDataCanvas(600,600);
+  legendAcc[iVar] = new LegendNode2D(legAccX[iVar],legAccY[iVar]);
 
   solidTgt.eachWithIndex { nTgt, iTgt ->
     String grcorr = "gr_rat" + nTgt + "_" + nVar;
@@ -93,11 +95,12 @@ Var.eachWithIndex { nVar, iVar->
     grAcc[iVar][iTgt].setLineColor(iTgt+1);
     grAcc[iVar][iTgt].setMarkerSize(5);
     grAcc[iVar][iTgt].setMarkerStyle(iTgt);
-    if(iTgt==0){
-      canAcc[iVar].draw(grAcc[iVar][iTgt]);
-    }else{
-      canAcc[iVar].draw(grAcc[iVar][iTgt],"same");
-    }
+    legendAcc[iVar].add(grAcc[iVar][iTgt],nTgt);
+    canAcc[iVar].draw(grAcc[iVar][iTgt],"same");
   }
-  canAcc[iVar].save(imgAccRat);
+  canAcc[iVar].getDataCanvas().getRegion(0).addNode(legendAcc[iVar]);
+  canAcc[iVar].setMargins(50,25,50,75);
+  canAcc[iVar].repaint();
+  String imgAccRat = "eg2Proton_MR_comp_" + nVar + "_" + userSigmaCut + "_AccRat.png";
+  canAcc[iVar].getDataCanvas().save(imgAccRat);
 }

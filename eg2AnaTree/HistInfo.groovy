@@ -30,9 +30,13 @@ class HistInfo {
   double[] xhi_kine = [3.0,3.5,1.0,180.0];
 
   String[] sigmaLabel = ["1.0","1.5","2.0","2.5","3.0"]; // sigma for proton ID cut
+  String[] sigmaUnderscore = ["sigma_1_0","sigma_1_5","sigma_2_0","sigma_2_5","sigma_3_0"]; // sigma for proton ID cut
 
   List<String> getSigmaLabel(){
     return sigmaLabel;
+  }
+  List<String> getSigmaUnderscore(){
+    return sigmaUnderscore;
   }
   List<String> getSolidTgtLabel(){
     return solidTgt;
