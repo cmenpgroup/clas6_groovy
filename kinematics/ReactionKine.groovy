@@ -62,22 +62,26 @@ class ReactionKine {
     return virtualPhoton;
   }
   double Q2(){
-    LorentzVector virt = this.getVirtualPhoton()
+    LorentzVector virt = this.getVirtualPhoton();
     return -virt.mass2();
   }
+  LorentzVector getVirtualPhotonTarget(){
+    LorentzVector virtPhotonTarget = this.getVirtualPhoton();
+    virtPhotonTarget.add(target);
+    return virtPhotonTarget;
+  }
   double W(){
-    LorentzVector virt = this.getVirtualPhoton()
-    virt.add(target)
+    LorentzVector virt = this.getVirtualPhotonTarget();
     return virt.mass();
   }
   double Mx(){ // missing mass: beam + target - scatterElectron - hadron
-    LorentzVector virt = this.getVirtualPhoton();
-    virt.add(target).sub(hadron)
+    LorentzVector virt = this.getVirtualPhotonTarget();
+    virt.sub(hadron)
     return virt.mass();
   }
   double Mx2(){ // missing mass: beam + target - scatterElectron - hadron
-    LorentzVector virt = this.getVirtualPhoton();
-    return virt.add(target).sub(hadron).mass2();
+    LorentzVector virt = this.getVirtualPhotonTarget();
+    return virt.sub(hadron).mass2();
   }
   double MxNuclei(int isSolid){ // missing mass: beam + nucleus - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhoton();
@@ -121,15 +125,35 @@ class ReactionKine {
   double sinThetaPQ(){
     return Math.sin(this.ThetaPQ());
   }
-  double pT2(){
+  double pT(){
     double momHadron = hadron.vect().mag();
     double sinPQ = this.sinThetaPQ();
-    return momHadron*momHadron*sinPQ*sinPQ;
+    return momHadron*sinPQ;
   }
-  double pL2(){
+  double pL(){
     double momHadron = hadron.vect().mag();
     double cosPQ = this.cosThetaPQ();
-    return momHadron*momHadron*cosPQ*cosPQ;
+    return momHadron*cosPQ;
+  }
+  double pT2(){
+    return Math.pow(this.pT(),2);
+  }
+  double pL2(){
+    return Math.pow(this.pL(),2);
+  }
+  double Xf(){
+    LorentzVector virt = this.getVirtualPhotonTarget();
+    double fW = this.W();
+
+    Particle frame = new Particle();
+    frame.initParticleWithMass(fW, virt.px(), virt.py(), virt.pz(), 0., 0., 0.);
+    Vector3 boost = frame.vector().boostVector();
+    boost.negative();
+
+    LorentzVector  vecL = new LorentzVector(hadron.px(), hadron.py(), hadron.pz(), hadron.e());
+    vecL.boost(boost);
+
+    return 2.0*vecL.pz()/fW;
   }
   double PhiPQ(){
     LorentzVector tempHadron = this.getHadron();

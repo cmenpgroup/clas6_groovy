@@ -189,8 +189,8 @@ Bank       ecpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::ecpb
 Bank       scpb   = new Bank(reader.getSchemaFactory().getSchema("DETECTOR::scpb"));
 
 // Define a ntuple tree with many variables
-TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:eTheta:ePhi:eVx:eVy:eVz:pNum:pIndex:pPx:pPy:pPz:pTheta:pPhi:pVx:pVy:pVz:q2:nu:W:zh:zLC:pT2:xb:yb:phiPQ:pFidCut:eFidCut:eFidEC:Mx:MxNuclei:Mx2");
-float[]  treeItem = new float[38];
+TreeFileWriter tree = new TreeFileWriter(outFile,"protonTree","Run:Event:iTgt:eNum:eIndex:ePx:ePy:ePz:eTheta:ePhi:eVx:eVy:eVz:pNum:pIndex:pPx:pPy:pPz:pTheta:pPhi:pVx:pVy:pVz:q2:nu:W:zh:zLC:pT2:xb:yb:thetaPQ:phiPQ:pFidCut:eFidCut:eFidEC:Mx:MxNuclei:Mx2:xf");
+float[]  treeItem = new float[40];
 
 // Loop over all events
 while(reader.hasNext()){
@@ -412,13 +412,15 @@ while(reader.hasNext()){
           treeItem[28] = myRK.pT2();
           treeItem[29] = myRK.Xb();
           treeItem[30] = myRK.Yb();
-          treeItem[31] = Math.toDegrees(myRK.PhiPQ());
-          treeItem[32] = pFidCut;
-          treeItem[33] = emFidCut;
-          treeItem[34] = emECFidCut;
-          treeItem[35] = myRK.Mx();
-          treeItem[36] = myRK.MxNuclei(pTgt);
-          treeItem[37] = myRK.Mx2();
+          treeItem[31] = Math.toDegrees(myRK.ThetaPQ());
+          treeItem[32] = Math.toDegrees(myRK.PhiPQ());
+          treeItem[33] = pFidCut;
+          treeItem[34] = emFidCut;
+          treeItem[35] = emECFidCut;
+          treeItem[36] = myRK.Mx();
+          treeItem[37] = myRK.MxNuclei(pTgt);
+          treeItem[38] = myRK.Mx2();
+          treeItem[39] = myRK.Xf();
           tree.addRow(treeItem);  // add the tree data
         }
       }

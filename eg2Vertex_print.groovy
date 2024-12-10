@@ -31,7 +31,7 @@ H1F[][] h1DSec = new H1F[histSec.size()][MAX_SECTORS];
 // create a TDirectory object and read in the histogram file
 TDirectory dir2 = new TDirectory();
 
-OptionParser p = new OptionParser("clas6BetaVsP_print.groovy");
+OptionParser p = new OptionParser("egVertex_print.groovy");
 p.addRequired("-p","Particle Type: 0=electron, 1=proton, 2=positive");
 p.parse(args);
 int pType = p.getOption("-p").intValue();
