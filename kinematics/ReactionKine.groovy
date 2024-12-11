@@ -76,7 +76,7 @@ class ReactionKine {
   }
   double Mx(){ // missing mass: beam + target - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhotonTarget();
-    virt.sub(hadron)
+    virt.sub(hadron);
     return virt.mass();
   }
   double Mx2(){ // missing mass: beam + target - scatterElectron - hadron
@@ -141,20 +141,21 @@ class ReactionKine {
   double pL2(){
     return Math.pow(this.pL(),2);
   }
+
   double Xf(){
     LorentzVector virt = this.getVirtualPhotonTarget();
-    double fW = this.W();
 
     Particle frame = new Particle();
-    frame.initParticleWithMass(fW, virt.px(), virt.py(), virt.pz(), 0., 0., 0.);
+    frame.initParticleWithMass(virt.mass(), virt.px(), virt.py(), virt.pz(), 0., 0., 0.);
     Vector3 boost = frame.vector().boostVector();
     boost.negative();
 
     LorentzVector  vecL = new LorentzVector(hadron.px(), hadron.py(), hadron.pz(), hadron.e());
     vecL.boost(boost);
 
-    return 2.0*vecL.pz()/fW;
+    return 2.0*vecL.pz()/virt.mass();
   }
+
   double PhiPQ(){
     LorentzVector tempHadron = this.getHadron();
     LorentzVector virt = this.getVirtualPhoton();

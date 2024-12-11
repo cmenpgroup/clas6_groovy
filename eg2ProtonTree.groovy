@@ -1,12 +1,16 @@
 import org.jlab.jnp.hipo4.data.*;
 import org.jlab.jnp.hipo4.io.*;
-import org.jlab.jnp.physics.*;
-import org.jlab.jnp.pdg.PhysicsConstants;
+import org.jlab.clas.physics.*;
+import org.jlab.clas.pdg.PhysicsConstants;
+//import org.jlab.jnp.physics.*;
+//import org.jlab.jnp.pdg.PhysicsConstants;
 
 import org.jlab.groot.base.GStyle
 import org.jlab.groot.data.*;
 import org.jlab.groot.ui.*;
 import org.jlab.groot.tree.*; // new import for ntuples
+//---- imports for OPTIONPARSER library
+import org.jlab.jnp.utils.options.OptionParser;
 
 import eg2Cuts.clas6beta
 import eg2Cuts.clas6EC
@@ -121,64 +125,46 @@ Vector3 ecUVW = new Vector3(0.0,0.0,0.0);
 myRK.setBeam(beamEnergy,PhyConsts.massElectron());
 myRK.setTarget(PhyConsts.massProton());
 
-def cli = new CliBuilder(usage:'eg2ProtonTree.groovy [options] infile1 infile2 ...')
-cli.h(longOpt:'help', 'Print this message.')
-cli.M(longOpt:'max',  args:1, argName:'max events' , type: int, 'Filter this number of events');
-cli.c(longOpt:'counter', args:1, argName:'count by events', type: int, 'Event progress counter');
-cli.o(longOpt:'output', args:1, argName:'Ntuple output file', type: String, 'Output file name');
-cli.s(longOpt:'solid', args:1, argName:'Solid Target', type: String, 'Solid Target (C, Fe, Pb)');
-cli.g(longOpt:'graph', 'Graph monitoring histograms');
-cli.P(longOpt:'protonIDcut', args:1, argName:'cut index', type: int, 'Proton ID Cut index (  def=0)')
+OptionParser p = new OptionParser("eg2ProtonTree.groovy");
 
-def options = cli.parse(args);
-if (!options) return;
-if (options.h){ cli.usage(); return; }
-
-def printCounter = 20000;
-if(options.c) printCounter = options.c;
-
-def maxEvents = 0;
-if(options.M) maxEvents = options.M;
-
-def outFile = "eg2ProtonNtuple.hipo";
-if(options.o) outFile = options.o;
-
+String outFile = "eg2ProtonNtuple.hipo";
+p.addOption("-o", outFile, "Output file name");
 String userTgt = "C";
-if(options.s) userTgt = options.s;
+p.addOption("-s", userTgt, "Solid Target (C, Fe, Pb)");
+int iCut = 0;
+p.addOption("-P", Integer.toString(iCut), "Proton ID Cut index");
+int bGraph = 1;
+p.addOption("-g",Integer.toString(bGraph), "Graph monitor histograms. (0=quiet)");
+int printCounter = 20000;
+p.addOption("-c",Integer.toString(printCounter), "Event progress counter");
+int maxEvents = 0;
+p.addOption("-M",Integer.toString(maxEvents), "Filter this number of events");
+
+p.parse(args);
+outFile = p.getOption("-o").stringValue();
+userTgt = p.getOption("-s").stringValue();
+iCut = p.getOption("-P").stringValue();
+bGraph = p.getOption("-g").intValue();
+printCounter = p.getOption("-c").intValue();
+maxEvents = p.getOption("-M").intValue();
+
 myRK.setSolidTarget(userTgt);
 
-boolean bGraph = false;
-if(options.g) bGraph = true;
-
-def iCut = 0;
-if(options.P){
-  iCut = options.P;
-  if(iCut<0 || iCut>=clas6Proton.ProtonIDCuts.values().size()){
-    int maxIndex = clas6Proton.ProtonIDCuts.values().size()-1;
-    println "Proton ID Cut Index must be between 0 and " + maxIndex;
-    cli.usage();
-    return;
-  }
+// check that the proton ID cut is in a valid range
+if(iCut<0 || iCut>=clas6Proton.ProtonIDCuts.values().size()){
+  int maxIndex = clas6Proton.ProtonIDCuts.values().size()-1;
+  println "Proton ID Cut Index must be between 0 and " + maxIndex;
+  System.exit(0);
 }
 
 myProton.SetCuts(clas6Proton.ProtonIDCuts.values()[iCut]);
 println myProton.GetCutName();
 
-def extraArguments = options.arguments()
-if (extraArguments.isEmpty()){
-  println "No input file!";
-  cli.usage();
-  return;
-}
-
 println "Beam " + beamEnergy + " GeV";
 println "Speed of light = " + LIGHTSPEED + " cm/ns";
 
 HipoChain reader = new HipoChain();
-
-extraArguments.each { infile ->
-  reader.addFile(infile);
-}
+reader.addFiles(p.getInputList());
 reader.open();
 
 Event      event  = new Event();
