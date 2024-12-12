@@ -144,12 +144,7 @@ class ReactionKine {
 
   double Xf(){
     LorentzVector virt = this.getVirtualPhotonTarget();
-
-//    Particle frame = new Particle();
-//    frame.initParticleWithMass(0., 0., 0., 0., 0., 0., 0.);
-//    frame.initParticleWithMass(virt.mass(), virt.px(), virt.py(), virt.pz(), 0., 0., 0.);
     Vector3 boost = virt.boostVector();
-//    Vector3 boost = frame.vector().boostVector();
     boost.negative();
 
     LorentzVector  vecL = new LorentzVector(hadron.px(), hadron.py(), hadron.pz(), hadron.e());
