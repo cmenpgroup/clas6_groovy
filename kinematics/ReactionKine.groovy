@@ -81,7 +81,8 @@ class ReactionKine {
   }
   double Mx2(){ // missing mass: beam + target - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhotonTarget();
-    return virt.sub(hadron).mass2();
+    virt.sub(hadron);
+    return virt.mass2();
   }
   double MxNuclei(int isSolid){ // missing mass: beam + nucleus - scatterElectron - hadron
     LorentzVector virt = this.getVirtualPhoton();
@@ -100,7 +101,8 @@ class ReactionKine {
         exit;
         break;
     }
-    return virt.sub(hadron).mass();
+    virt.sub(hadron);
+    return virt.mass();
   }
   double nu(){
     return beamElectron.e()-scatteredElectron.e();
@@ -117,7 +119,8 @@ class ReactionKine {
   }
   double ThetaPQ(){
     LorentzVector virt = this.getVirtualPhoton();
-    return virt.angle(hadron);
+    return Math.toRadians(virt.vect().theta(hadron.vect()));
+//    return virt.angle(hadron);
   }
   double cosThetaPQ(){
     return Math.cos(this.ThetaPQ());
@@ -160,7 +163,8 @@ class ReactionKine {
     virt.rotateZ(phi_z);
     tempHadron.rotateZ(phi_z);
     Vector3 Vhelp = new Vector3(0.0,0.0,1.0);
-    double phi_y = virt.vect().angle(Vhelp);
+    double phi_y = Math.toRadians(virt.vect().theta(Vhelp));
+//    double phi_y = virt.vect().angle(Vhelp);
     virt.rotateY(phi_y);
     tempHadron.rotateY(phi_y);
     return tempHadron.phi();

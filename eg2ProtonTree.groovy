@@ -143,7 +143,7 @@ p.addOption("-M",Integer.toString(maxEvents), "Filter this number of events");
 p.parse(args);
 outFile = p.getOption("-o").stringValue();
 userTgt = p.getOption("-s").stringValue();
-iCut = p.getOption("-P").stringValue();
+iCut = p.getOption("-P").intValue();
 bGraph = p.getOption("-g").intValue();
 printCounter = p.getOption("-c").intValue();
 maxEvents = p.getOption("-M").intValue();
